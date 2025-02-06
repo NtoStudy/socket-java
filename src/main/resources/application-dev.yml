@@ -1,0 +1,9 @@
+#开发环境下的配置文件
+socket:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: chat_app_db1
+    username: root
+    password: root
