@@ -1,7 +1,7 @@
 package com.socket.socketjava.interceptor;
 
-import com.socket.socketjava.domain.vo.LoginVo;
-import com.socket.socketjava.utils.exception.socketException;
+
+import com.socket.socketjava.domain.holder.LoginHolder;
 import com.socket.socketjava.utils.holder.UserHolder;
 import com.socket.socketjava.utils.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -23,9 +23,10 @@ public class JWTInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
 
         Claims claims = JwtUtil.parseToken(token);
+        Integer userId = claims.get("userId", Integer.class);
         String number = claims.get("number", String.class);
-        String password = claims.get("password", String.class);
-        UserHolder.setLoginVo(new LoginVo(number,password));
+        String username = claims.get("username", String.class);
+        UserHolder.setLoginHolder(new LoginHolder(userId, number, username));
 
         return true;
     }

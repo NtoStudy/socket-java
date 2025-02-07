@@ -1,15 +1,15 @@
 package com.socket.socketjava.utils.holder;
 
-import com.socket.socketjava.domain.vo.LoginVo;
+import com.socket.socketjava.domain.holder.LoginHolder;
 
 public class UserHolder {
-    public static ThreadLocal<LoginVo> threadLocal = new ThreadLocal<>();
+    public static ThreadLocal<LoginHolder> threadLocal = new ThreadLocal<>();
 
-    public static void setLoginVo(LoginVo loginVo) {
-        threadLocal.set(loginVo);
+    public static void setLoginHolder(LoginHolder loginHolder) {
+        threadLocal.set(loginHolder);
     }
 
-    public static LoginVo getLoginVo() {
+    public static LoginHolder getLoginHolder() {
         return threadLocal.get();
     }
 

@@ -44,7 +44,7 @@ public class UsersController {
     @Operation(summary = "退出登录")
     @PostMapping("/logout")
     public Result logout(){
-        String number = UserHolder.getLoginVo().getNumber();
+        String number = UserHolder.getLoginHolder().getNumber();
         usersService.changeStatus(0,number);
         return Result.ok();
     }
@@ -52,7 +52,7 @@ public class UsersController {
     @Operation(summary = "获取用户状态")
     @GetMapping("/status")
     public Result<Integer> getStatus(){
-        String number = UserHolder.getLoginVo().getNumber();
+        String number = UserHolder.getLoginHolder().getNumber();
         Integer status = usersService.getStatusByNumber(number);
         return Result.ok(status);
     }
@@ -60,7 +60,7 @@ public class UsersController {
     @Operation(summary = "修改用户状态")
     @PostMapping("/status")
     public Result changeStatus(@RequestBody Integer status){
-        String number = UserHolder.getLoginVo().getNumber();
+        String number = UserHolder.getLoginHolder().getNumber();
         usersService.changeStatus(status,number);
         return Result.ok();
     }

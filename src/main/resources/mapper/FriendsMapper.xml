@@ -2,4 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.socket.socketjava.mapper.FriendsMapper">
 
+    <select id="selectByReceiverId" resultType="com.socket.socketjava.domain.vo.AcceptFriendVo"
+            parameterType="java.lang.Integer">
+        select
+            f.relation_id,
+            f.user_id,
+            u.username,
+            u.number,
+            u.avatar_url,
+            f.status
+        from friends f
+                 join users u on f.user_id = u.user_id
+        where friend_id = #{userId}
+
+    </select>
 </mapper>

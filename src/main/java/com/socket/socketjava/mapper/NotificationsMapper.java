@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface NotificationsMapper extends BaseMapper<Notifications> {
 
+
+    Notifications selectByReceiverId(Integer userId);
 }

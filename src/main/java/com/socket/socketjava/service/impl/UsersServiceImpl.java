@@ -47,7 +47,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         usersMapper.updateStatus(1,loginVo.getNumber());
 
         // 如果所有对实现，则创建jwt令牌
-        return JwtUtil.createToken(users.getUsername(), users.getNumber());
+        return JwtUtil.createToken(users.getUserId(), users.getNumber(),users.getUsername());
     }
 
     @Override

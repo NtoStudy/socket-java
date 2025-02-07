@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFriendsService extends IService<Friends> {
 
+    void addFriend(String userNumber, String friendNumber);
 }

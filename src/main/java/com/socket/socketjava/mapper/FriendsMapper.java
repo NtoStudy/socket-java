@@ -2,6 +2,9 @@ package com.socket.socketjava.mapper;
 
 import com.socket.socketjava.domain.pojo.Friends;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.socket.socketjava.domain.vo.AcceptFriendVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface FriendsMapper extends BaseMapper<Friends> {
 
+    AcceptFriendVo selectByReceiverId(Integer userId);
 }
