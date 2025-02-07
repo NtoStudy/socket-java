@@ -3,6 +3,7 @@ package com.socket.socketjava.service;
 import com.socket.socketjava.domain.pojo.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.socket.socketjava.domain.vo.LoginVo;
+import com.socket.socketjava.domain.vo.RegisterVo;
 
 /**
  * <p>
@@ -15,4 +16,6 @@ import com.socket.socketjava.domain.vo.LoginVo;
 public interface IUsersService extends IService<Users> {
 
     String login(LoginVo loginVo);
+
+    String register(RegisterVo registerVo);
 }

@@ -3,7 +3,7 @@ package com.socket.socketjava.domain.vo;
 import lombok.Data;
 
 @Data
-public class LoginVo {
-    private String number;
+public class RegisterVo {
+    private String username;
     private String password;
 }
