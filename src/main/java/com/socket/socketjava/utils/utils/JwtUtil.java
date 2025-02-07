@@ -1,6 +1,7 @@
-package com.socket.socketjava.utils;
+package com.socket.socketjava.utils.utils;
 import javax.crypto.SecretKey;
 import com.socket.socketjava.result.ResultCodeEnum;
+import com.socket.socketjava.utils.exception.socketException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Date;
@@ -41,11 +42,4 @@ public class JwtUtil {
         }
     }
 
-    public String getTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 }

@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface UsersMapper extends BaseMapper<Users> {
 
-
     Users selectByNumber(String number);
+
+    void updateStatus(Integer status, String number);
 }

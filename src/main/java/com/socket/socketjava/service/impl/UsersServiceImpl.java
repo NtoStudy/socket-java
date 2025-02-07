@@ -8,11 +8,10 @@ import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.result.ResultCodeEnum;
 import com.socket.socketjava.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.socket.socketjava.utils.JwtUtil;
-import com.socket.socketjava.utils.socketException;
+import com.socket.socketjava.utils.utils.JwtUtil;
+import com.socket.socketjava.utils.exception.socketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Random;
 
@@ -44,6 +43,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         if(!users.getPassword().equals(loginVo.getPassword())){
             throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
         }
+        // 将用户状态更改为在线
+        usersMapper.updateStatus(1,loginVo.getNumber());
 
         // 如果所有对实现，则创建jwt令牌
         return JwtUtil.createToken(users.getUsername(), users.getNumber());
@@ -62,6 +63,20 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         this.save(users);
         return users.getNumber();
     }
+
+    @Override
+    public Integer getStatusByNumber(String number) {
+
+        Users users = usersMapper.selectByNumber(number);
+
+        return users.getStatus();
+    }
+
+    @Override
+    public void changeStatus(Integer status, String number) {
+        usersMapper.updateStatus(status,number);
+    }
+
 
     /**
      * 随机生成首位不为0的十位数字

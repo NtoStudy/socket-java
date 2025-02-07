@@ -18,4 +18,9 @@ public interface IUsersService extends IService<Users> {
     String login(LoginVo loginVo);
 
     String register(RegisterVo registerVo);
+
+
+    Integer getStatusByNumber(String number);
+
+    void changeStatus(Integer status, String number);
 }
