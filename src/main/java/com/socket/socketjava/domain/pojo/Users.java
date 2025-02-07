@@ -47,7 +47,7 @@ public class Users implements Serializable {
     @ApiModelProperty(value = "注册时间")
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "用户状态")
+    @ApiModelProperty(value = "用户状态,0离线，1在线")
     private Integer status;
 
 

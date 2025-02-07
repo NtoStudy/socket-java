@@ -8,6 +8,8 @@ import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.result.ResultCodeEnum;
 import com.socket.socketjava.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.socket.socketjava.utils.JwtUtil;
+import com.socket.socketjava.utils.socketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,13 +33,20 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public String login(LoginVo loginVo) {
+
+        Users users = usersMapper.selectByNumber(loginVo.getNumber());
+
         // 先判断用户名number是否存在
-
-
+        if(users == null){
+            throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
+        }
         // 再判断密码是否正确
+        if(!users.getPassword().equals(loginVo.getPassword())){
+            throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
+        }
 
-
-        return "";
+        // 如果所有对实现，则创建jwt令牌
+        return JwtUtil.createToken(users.getUsername(), users.getNumber());
     }
 
     @Override
@@ -55,7 +64,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     /**
-     * 随机生成十位数字
+     * 随机生成首位不为0的十位数字
      * @return
      */
 

@@ -1,66 +1,51 @@
 package com.socket.socketjava.utils;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import javax.crypto.SecretKey;
+import com.socket.socketjava.result.ResultCodeEnum;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Map;
+import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Component;
+
 
 @Slf4j
+@Component
 public class JwtUtil {
-    /**
-     * 生成jwt
-     * 使用Hs256算法, 私匙使用固定秘钥
-     *
-     * @param secretKey jwt秘钥
-     * @param ttlMillis jwt过期时间(毫秒)
-     * @param claims    设置的信息
-     * @return 生成的jwt字符串
-     */
-    public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
-        // 指定签名的时候使用的签名算法，也就是header那部分
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
-        // 生成JWT的时间
-        long expMillis = System.currentTimeMillis() + ttlMillis;
-        Date exp = new Date(expMillis);
-
-        // 设置jwt的body
-        JwtBuilder builder = Jwts.builder()
-                // 如果有私有声明，一定要先设置这个自己创建的私有的声明，这个是给builder的claim赋值，
-                // 一旦写在标准的声明赋值之后，就是覆盖了那些标准的声明的
-                .setClaims(claims)
-                // 设置签名使用的签名算法和签名使用的秘钥
-                .signWith(signatureAlgorithm, secretKey.getBytes(StandardCharsets.UTF_8))
-                // 设置过期时间
-                .setExpiration(exp);
-
-        // 将jwt以compact的形式返回
-        return builder.compact();
+    private static SecretKey secretKey = Keys.hmacShaKeyFor("CY29Eb04RPNyQPxACH2jBNWFGn0ypMhc".getBytes());
+    public static String createToken(String username, String number) {
+        return Jwts.builder()
+                .setSubject("LOGIN_USER")
+                .setExpiration(new Date(System.currentTimeMillis() + 3600000 * 24 * 365L))
+                .claim("username", username)
+                .claim("number", number)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    /**
-     * Token解密
-     *
-     * @param secretKey jwt秘钥 此秘钥一定要保留好在服务端, 不能暴露出去, 否则sign就可以被伪造, 如果对接多个客户端建议改造成多个
-     * @param token     加密后的token
-     * @return 解密后的jwt claims信息
-     */
-    public static Claims parseJWT(String secretKey, String token) {
-        // 得到DefaultJwtParser
-        Claims claims = Jwts.parser()
-                // 设置签名的秘钥
-                .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
-                // 设置需要解析的jwt
-                .parseClaimsJws(token).getBody();
+    public static Claims parseToken(String token) {
+        if (token == null) {
+            throw new socketException(ResultCodeEnum.ADMIN_LOGIN_AUTH);
+        }
 
-        // 解析成功后记录日志
-        log.info("解析成功");
-        return claims;
+        try {
+            Jws<Claims> claimsJws = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return claimsJws.getBody();
+        } catch (ExpiredJwtException e) {
+            throw new socketException(ResultCodeEnum.TOKEN_EXPIRED);
+        } catch (JwtException e) {
+            throw new socketException(ResultCodeEnum.TOKEN_INVALID);
+        }
     }
 
+    public String getTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }
