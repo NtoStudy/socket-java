@@ -2,7 +2,7 @@ package com.socket.socketjava.service;
 
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.socket.socketjava.domain.vo.AcceptFriendVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 
 import java.util.List;
 

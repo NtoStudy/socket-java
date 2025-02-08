@@ -1,8 +1,8 @@
 package com.socket.socketjava.controller;
 
 
-import com.socket.socketjava.domain.vo.LoginVo;
-import com.socket.socketjava.domain.vo.RegisterVo;
+import com.socket.socketjava.domain.vo.Users.LoginVo;
+import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;

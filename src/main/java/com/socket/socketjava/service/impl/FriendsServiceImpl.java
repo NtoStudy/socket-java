@@ -3,6 +3,7 @@ package com.socket.socketjava.service.impl;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.socket.socketjava.domain.pojo.Users;
+import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.mapper.FriendsMapper;
 import com.socket.socketjava.mapper.NotificationsMapper;
 import com.socket.socketjava.mapper.UsersMapper;
@@ -10,6 +11,8 @@ import com.socket.socketjava.service.IFriendsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -26,6 +29,8 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
     private UsersMapper usersMapper;
     @Autowired
     private NotificationsMapper notificationsMapper;
+    @Autowired
+    private FriendsMapper friendsMapper;
 
     @Override
     public void addFriend(String userNumber, String friendNumber) {
@@ -45,4 +50,20 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
                 .setType("friend")
                 .setStatus(0));
     }
+
+    @Override
+    public void acceptOrRejectFriend(Integer relationId, Integer status) {
+        Friends friends = new Friends();
+        friends.setRelationId(relationId);
+        friends.setStatus(status);
+        this.updateById(friends);
+    }
+
+    @Override
+    public List<FriendVo> friendList(Integer userId) {
+
+        return friendsMapper.selectFriendsList(userId);
+    }
+
+
 }

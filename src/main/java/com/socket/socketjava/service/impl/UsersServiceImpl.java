@@ -2,8 +2,9 @@ package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.pojo.Users;
-import com.socket.socketjava.domain.vo.LoginVo;
-import com.socket.socketjava.domain.vo.RegisterVo;
+import com.socket.socketjava.domain.vo.Friends.FriendVo;
+import com.socket.socketjava.domain.vo.Users.LoginVo;
+import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.result.ResultCodeEnum;
 import com.socket.socketjava.service.IUsersService;
@@ -13,6 +14,7 @@ import com.socket.socketjava.utils.exception.socketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -76,6 +78,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     public void changeStatus(Integer status, String number) {
         usersMapper.updateStatus(status,number);
     }
+
 
 
     /**

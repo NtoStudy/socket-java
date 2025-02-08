@@ -2,8 +2,11 @@ package com.socket.socketjava.service;
 
 import com.socket.socketjava.domain.pojo.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.socket.socketjava.domain.vo.LoginVo;
-import com.socket.socketjava.domain.vo.RegisterVo;
+import com.socket.socketjava.domain.vo.Friends.FriendVo;
+import com.socket.socketjava.domain.vo.Users.LoginVo;
+import com.socket.socketjava.domain.vo.Users.RegisterVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -19,8 +22,8 @@ public interface IUsersService extends IService<Users> {
 
     String register(RegisterVo registerVo);
 
-
     Integer getStatusByNumber(String number);
 
     void changeStatus(Integer status, String number);
+
 }

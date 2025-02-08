@@ -1,4 +1,4 @@
-package com.socket.socketjava.domain.vo;
+package com.socket.socketjava.domain.vo.Users;
 
 import lombok.Data;
 

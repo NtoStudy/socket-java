@@ -38,7 +38,7 @@ public class Friends implements Serializable {
     @ApiModelProperty(value = "好友ID")
     private Integer friendId;
 
-    @ApiModelProperty(value = "好友关系状态")
+    @ApiModelProperty(value = "好友关系状态0未接受，1已接受，2已拒绝")
     private Integer status;
 
     @ApiModelProperty(value = "创建时间")

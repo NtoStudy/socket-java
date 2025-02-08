@@ -2,6 +2,9 @@ package com.socket.socketjava.service;
 
 import com.socket.socketjava.domain.pojo.Friends;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.socket.socketjava.domain.vo.Friends.FriendVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IFriendsService extends IService<Friends> {
 
     void addFriend(String userNumber, String friendNumber);
+
+
+    void acceptOrRejectFriend(Integer relationId, Integer status);
+
+    List<FriendVo> friendList(Integer userId);
 }

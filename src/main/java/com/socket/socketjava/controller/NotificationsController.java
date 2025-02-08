@@ -1,17 +1,12 @@
 package com.socket.socketjava.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.socket.socketjava.domain.pojo.Friends;
-import com.socket.socketjava.domain.pojo.Notifications;
-import com.socket.socketjava.domain.pojo.Users;
-import com.socket.socketjava.domain.vo.AcceptFriendVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.INotificationsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>

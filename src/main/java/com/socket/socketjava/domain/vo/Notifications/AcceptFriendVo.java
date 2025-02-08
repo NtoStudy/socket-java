@@ -1,4 +1,4 @@
-package com.socket.socketjava.domain.vo;
+package com.socket.socketjava.domain.vo.Notifications;
 
 
 import io.swagger.annotations.ApiModelProperty;
