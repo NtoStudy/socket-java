@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtil {
     private static SecretKey secretKey = Keys.hmacShaKeyFor("CY29Eb04RPNyQPxACH2jBNWFGn0ypMhc".getBytes());
-    public static String createToken(Integer userId, String username, String number) {
+    public static String createToken(Integer userId, String number) {
         return Jwts.builder()
                 .setSubject("LOGIN_USER")
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000 * 24 * 365L))
                 .claim("userId",userId)
                 .claim("number", number)
-                .claim("username", username)
+
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

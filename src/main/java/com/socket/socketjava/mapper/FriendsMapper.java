@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface FriendsMapper extends BaseMapper<Friends> {
 
-    AcceptFriendVo selectByReceiverId(Integer userId);
+    List <AcceptFriendVo> selectByReceiverId(Integer userId);
 
     List<FriendVo> selectFriendsList(Integer userId);
 }

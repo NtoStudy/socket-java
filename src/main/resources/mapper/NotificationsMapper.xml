@@ -6,6 +6,9 @@
             resultType="com.socket.socketjava.domain.pojo.Notifications">
         select *
         from notifications
-        where receiver_id = #{userId}
+        where receiver_id = #{userId} and type = 'friend'
     </select>
+
+
+
 </mapper>

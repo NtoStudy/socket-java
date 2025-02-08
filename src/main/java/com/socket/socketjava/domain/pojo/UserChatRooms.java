@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -40,6 +42,9 @@ public class UserChatRooms implements Serializable {
 
     @ApiModelProperty(value = "加入时间")
     private LocalDateTime joinedAt;
+
+    @ApiModelProperty(value = "状态：0-申请中，1-已加入，2-拒绝")
+    private Integer status;
 
 
 }

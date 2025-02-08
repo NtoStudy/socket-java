@@ -52,11 +52,8 @@ public class FriendsController {
     @GetMapping("/friendlist")
     @Operation(summary = "查询好友列表")
     public Result<List<FriendVo>> friendList(){
-
         Integer userId = UserHolder.getLoginHolder().getUserId();
-
         List<FriendVo> friendList = ifriendsService.friendList(userId);
-
         return Result.ok(friendList);
     }
 

@@ -2,6 +2,7 @@ package com.socket.socketjava.controller;
 
 
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.INotificationsService;
 import com.socket.socketjava.utils.holder.UserHolder;
@@ -39,4 +40,11 @@ public class NotificationsController {
         return Result.ok(acceptFriendVoList);
     }
 
+    @GetMapping("/chatroom")
+    @Operation(summary = "未处理的群聊邀请")
+    public Result<List<AcceptRoomsVo>> noAcceptRooms() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        List<AcceptRoomsVo> acceptRoomsVoList = iNotificationsService.selectRooms(userId);
+        return Result.ok(acceptRoomsVoList);
+    }
 }

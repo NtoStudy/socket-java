@@ -3,6 +3,7 @@ package com.socket.socketjava.service;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ import java.util.List;
 public interface INotificationsService extends IService<Notifications> {
 
     List<AcceptFriendVo> selectFriend(Integer userId);
+
+    List<AcceptRoomsVo> selectRooms(Integer userId);
 }

@@ -37,16 +37,26 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         // 先从users表中查到number对应的用户id
         Users user = usersMapper.selectByNumber(userNumber);
         Users friend = usersMapper.selectByNumber(friendNumber);
+
+        // 检查用户是否存在
+        if (user == null) {
+            throw new IllegalArgumentException("用户 " + 1 + " 不存在");
+        }
+        if (friend == null) {
+            throw new IllegalArgumentException("用户 " + 2 + " 不存在");
+        }
+
         // 关系保存到friends表中，状态是待核审
         Friends friends = new Friends();
         friends.setUserId(user.getUserId());
         friends.setFriendId(friend.getUserId());
         friends.setStatus(0);
         this.save(friends);
+
         // 关系保存到系统通知表中，因为要通知对方
         notificationsMapper.insert(new Notifications()
                 .setReceiverId(friend.getUserId())
-                .setContent(user.getUsername() + "请求加为好友")
+                .setContent(user.getUsername() + " 请求加为好友")
                 .setType("friend")
                 .setStatus(0));
     }
@@ -61,7 +71,6 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
 
     @Override
     public List<FriendVo> friendList(Integer userId) {
-
         return friendsMapper.selectFriendsList(userId);
     }
 

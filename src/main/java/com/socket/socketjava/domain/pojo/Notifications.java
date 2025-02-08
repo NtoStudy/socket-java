@@ -38,6 +38,9 @@ public class Notifications implements Serializable {
     @ApiModelProperty(value = "通知内容")
     private String content;
 
+    @ApiModelProperty(value = "创建者ID")
+    private Integer creatorId;
+
     @ApiModelProperty(value = "通知类型")
     private String type;
 

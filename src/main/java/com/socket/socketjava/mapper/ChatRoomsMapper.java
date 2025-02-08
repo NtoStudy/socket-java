@@ -2,6 +2,9 @@ package com.socket.socketjava.mapper;
 
 import com.socket.socketjava.domain.pojo.ChatRooms;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ChatRoomsMapper extends BaseMapper<ChatRooms> {
 
+
+    List<AcceptRoomsVo> selectByCreatorId(Integer userId);
 }

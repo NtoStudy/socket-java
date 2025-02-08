@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.socket.socketjava.mapper.UserChatRoomsMapper">
 
+
+    <select id="selectRoomList" resultType="com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo">
+        select cr.room_id,
+               ucr.user_id,
+               cr.room_name,
+               cr.avatar_url
+        from user_chat_rooms ucr
+                 join chat_rooms cr on cr.room_id = ucr.room_id
+        where ucr.user_id = #{userId}
+          and ucr.status = 1
+    </select>
 </mapper>

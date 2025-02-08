@@ -9,5 +9,4 @@ import lombok.Data;
 public class LoginHolder {
     private Integer userId;
     private String number;
-    private String username;
 }

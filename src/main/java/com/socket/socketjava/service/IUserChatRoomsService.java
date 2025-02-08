@@ -2,6 +2,10 @@ package com.socket.socketjava.service;
 
 import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
+import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserChatRoomsService extends IService<UserChatRooms> {
 
+    void createChatRoom(Integer userId, CreateRoomVo createRoomVo);
+
+    void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status);
+
+    List<ChatRoomListVo> getRoomList(Integer userId);
 }
