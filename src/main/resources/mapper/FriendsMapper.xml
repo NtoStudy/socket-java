@@ -18,16 +18,24 @@
 
 
     <select id="selectFriendsList" resultType="com.socket.socketjava.domain.vo.Friends.FriendVo">
-        select f.relation_id as relationId,
-               f.friend_id   as friendId,
-               f.status      as relationStatus,
-               u.username,
-               u.number,
-               u.avatar_url  as avatarUrl,
-               u.status      as userStatus
-        from friends f
-                 join users u on f.friend_id = u.user_id
-        where f.user_id = #{userId}
-          and f.status = 1
+        SELECT
+            f.relation_id AS relationId,
+            CASE
+                WHEN f.user_id = #{userId} THEN f.friend_id
+                ELSE f.user_id
+                END AS friendId,
+            f.status AS relationStatus,
+            u.username,
+            u.number,
+            u.avatar_url AS avatarUrl,
+            u.status AS userStatus
+        FROM friends f
+                 JOIN users u ON
+            (f.user_id = #{userId} AND u.user_id = f.friend_id)
+                OR (f.friend_id = #{userId} AND u.user_id = f.user_id)
+        WHERE
+            (f.user_id = #{userId} OR f.friend_id = #{userId})
+          AND f.status = 1
+        ORDER BY friendId;
     </select>
 </mapper>

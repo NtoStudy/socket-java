@@ -1,5 +1,6 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.MessageListDTO;
 import com.socket.socketjava.domain.pojo.Messages;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMessagesService extends IService<Messages> {
 
+    MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize);
+
+    void removeByMessageId(Integer messageId, Integer userId);
 }

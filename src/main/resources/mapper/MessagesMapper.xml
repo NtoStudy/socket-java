@@ -2,4 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.socket.socketjava.mapper.MessagesMapper">
 
+    <select id="getHistoryList" resultType="com.socket.socketjava.domain.pojo.Messages">
+        select *
+        from messages
+        where (sender_id = #{userId} and receiver_id = #{receiverId} and deleted_by_sender = 0)
+           or (sender_id = #{receiverId} and receiver_id = #{userId} and deleted_by_receiver = 0)
+        order by sent_time
+
+    </select>
 </mapper>
