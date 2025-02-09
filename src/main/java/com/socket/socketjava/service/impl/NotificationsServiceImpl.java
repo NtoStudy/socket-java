@@ -1,6 +1,6 @@
 package com.socket.socketjava.service.impl;
 
-import com.socket.socketjava.domain.pojo.ChatRooms;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
@@ -42,12 +42,24 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
         for (AcceptFriendVo acceptFriendVo : acceptFriendVoList) {
             acceptFriendVo.setStatus(1);
         }
+        // 将notifications表中的状态改为1
+        LambdaUpdateWrapper<Notifications> notificationsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        notificationsLambdaUpdateWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .set(Notifications::getStatus, 1);
+        this.update(notificationsLambdaUpdateWrapper);
+
         return acceptFriendVoList;
     }
 
     @Override
     public List<AcceptRoomsVo> selectRooms(Integer userId) {
         // 这里能获得roomName creatorId avatarUrl status content
+        LambdaUpdateWrapper<Notifications> notificationsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        notificationsLambdaUpdateWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .set(Notifications::getStatus, 1);
+        this.update(notificationsLambdaUpdateWrapper);
         return chatRoomsMapper.selectByCreatorId(userId);
     }
 }

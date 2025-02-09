@@ -1,6 +1,8 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.socket.socketjava.domain.pojo.Notifications;
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.result.Result;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +43,20 @@ public class NotificationsController {
         return Result.ok(acceptFriendVoList);
     }
 
+    @PostMapping("/friend")
+    @Operation(summary = "推送好友请求数量")
+    public Result pushFriend() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        notificationsLambdaQueryWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getStatus, 0)
+                .eq(Notifications::getType, "friend");
+        long count = iNotificationsService.count(notificationsLambdaQueryWrapper);
+        return Result.ok(count);
+    }
+
+
     @GetMapping("/chatroom")
     @Operation(summary = "未处理的群聊邀请")
     public Result<List<AcceptRoomsVo>> noAcceptRooms() {
@@ -47,4 +64,18 @@ public class NotificationsController {
         List<AcceptRoomsVo> acceptRoomsVoList = iNotificationsService.selectRooms(userId);
         return Result.ok(acceptRoomsVoList);
     }
+
+    @PostMapping("/chatroom")
+    @Operation(summary = "推送群聊邀请数量")
+    public Result pushRooms() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        notificationsLambdaQueryWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getStatus, 0)
+                .eq(Notifications::getType, "chatroom");
+        long count = iNotificationsService.count(notificationsLambdaQueryWrapper);
+        return Result.ok(count);
+    }
+
 }
