@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class MessageListDTO<T> {
-
     private long total;       // 总记录数
     private List<T> list;     // 当前页数据
     private int pageNum;      // 当前页码

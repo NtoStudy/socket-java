@@ -1,7 +1,9 @@
 package com.socket.socketjava.mapper;
 
-import com.socket.socketjava.domain.GroupMessages;
+import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface GroupMessagesMapper extends BaseMapper<GroupMessages> {
 
+    List<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId);
+
+    void updateByMessageId(Integer chatRoomId, Integer messageId, Integer userId);
 }

@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.socket.socketjava.mapper.GroupMessagesMapper">
+    <select id="getHistoryList" resultType="com.socket.socketjava.domain.pojo.GroupMessages">
+        SELECT *
+        FROM group_messages
+        WHERE deleted_by_admin = 0
+          AND (deleted_by_users IS NULL OR deleted_by_users NOT LIKE CONCAT('%', #{userId}, '%'))
+          AND chat_room_id = #{chatRoomId}
+        ORDER BY sent_time
+    </select>
+
+    <update id="updateByMessageId">
+        UPDATE group_messages
+        SET deleted_by_users =
+                CASE
+                    WHEN deleted_by_users IS NULL THEN JSON_ARRAY(#{userId})
+                    WHEN NOT JSON_CONTAINS(deleted_by_users, JSON_ARRAY(#{userId}), '$')
+                        THEN JSON_ARRAY_APPEND(deleted_by_users, '$', #{userId})
+                    ELSE deleted_by_users
+                    END
+        WHERE message_id = #{messageId}
+          and chat_room_id = #{chatRoomId};
+    </update>
 
 </mapper>

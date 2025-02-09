@@ -88,7 +88,6 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
 
     @Override
     public List<ChatRoomListVo> getRoomList(Integer userId) {
-
         return userChatRoomsMapper.selectRoomList(userId);
     }
 }
