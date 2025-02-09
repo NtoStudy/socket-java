@@ -90,4 +90,13 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     public List<ChatRoomListVo> getRoomList(Integer userId) {
         return userChatRoomsMapper.selectRoomList(userId);
     }
+
+    @Override
+    public List<Integer> getRoomUsers(Integer roomId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1);
+        List<UserChatRooms> userChatRooms = userChatRoomsMapper.selectList(userChatRoomsLambdaQueryWrapper);
+        return userChatRooms.stream().map(UserChatRooms::getUserId).toList();
+    }
 }

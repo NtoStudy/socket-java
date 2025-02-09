@@ -1,6 +1,7 @@
 package com.socket.socketjava.controller;
 
 
+import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
@@ -10,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * <p>
@@ -51,10 +54,9 @@ public class UsersController {
 
     @Operation(summary = "获取用户状态")
     @GetMapping("/status")
-    public Result<Integer> getStatus(){
-        String number = UserHolder.getLoginHolder().getNumber();
-        Integer status = usersService.getStatusByNumber(number);
-        return Result.ok(status);
+    public Result<Users> getStatus(@RequestParam Integer userId){
+        Users users = usersService.getById(userId);
+        return Result.ok(users);
     }
 
     @Operation(summary = "修改用户状态")

@@ -55,4 +55,13 @@ public class UserChatRoomsController {
         return Result.ok(list);
     }
 
+    @Operation(summary = "通过群获取群成员信息")
+    @GetMapping("/roomUsers")
+    public Result roomUsers(Integer roomId){
+        List<Integer> usersId = userChatRoomsService.getRoomUsers(roomId);
+        return Result.ok(usersId);
+    }
+
+
+
 }

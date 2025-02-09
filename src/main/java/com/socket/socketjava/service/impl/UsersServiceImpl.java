@@ -66,13 +66,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         return users.getNumber();
     }
 
-    @Override
-    public Integer getStatusByNumber(String number) {
 
-        Users users = usersMapper.selectByNumber(number);
-
-        return users.getStatus();
-    }
 
     @Override
     public void changeStatus(Integer status, String number) {

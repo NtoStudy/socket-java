@@ -22,4 +22,6 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status);
 
     List<ChatRoomListVo> getRoomList(Integer userId);
+
+    List<Integer> getRoomUsers(Integer roomId);
 }
