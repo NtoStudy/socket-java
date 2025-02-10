@@ -29,7 +29,7 @@ public class MessagesController {
 
     @PostMapping("/send")
     @Operation(summary = "发送私聊消息")
-    public Result send(Integer receiverId, String content) {
+    public Result send(@RequestBody Integer receiverId, String content) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         Messages messages = new Messages();
         messages.setSenderId(userId);

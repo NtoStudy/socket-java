@@ -8,15 +8,12 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
 @Component
 public class JWTInterceptor implements HandlerInterceptor {
-    @Autowired
-    private JwtUtil jwtUtil; // 确保 JwtUtil 被正确注入
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -26,7 +23,6 @@ public class JWTInterceptor implements HandlerInterceptor {
         Integer userId = claims.get("userId", Integer.class);
         String number = claims.get("number", String.class);
         UserHolder.setLoginHolder(new LoginHolder(userId, number));
-
         return true;
     }
 

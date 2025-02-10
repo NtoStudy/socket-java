@@ -9,6 +9,7 @@ import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/users")
 @Tag(name = "用户相关接口")
+@Slf4j
 public class UsersController {
 
     @Autowired
@@ -33,6 +35,7 @@ public class UsersController {
     @Operation(summary = "用户登录")
     @PostMapping("/login")
     public Result<String> login(@RequestBody LoginVo loginVo){
+        log.info("用户登录");
             String jwt = usersService.login(loginVo);
         return Result.ok(jwt);
     }
