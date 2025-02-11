@@ -34,39 +34,39 @@ public class UsersController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<String> login(@RequestBody LoginVo loginVo){
+    public Result<String> login(@RequestBody LoginVo loginVo) {
         log.info("用户登录");
-            String jwt = usersService.login(loginVo);
+        String jwt = usersService.login(loginVo);
         return Result.ok(jwt);
     }
 
     @Operation(summary = "用户注册")
     @PostMapping("/register")
-    public Result register(@RequestBody RegisterVo registerVo){
+    public Result register(@RequestBody RegisterVo registerVo) {
         String number = usersService.register(registerVo);
         return Result.ok(number);
     }
 
     @Operation(summary = "退出登录")
     @PostMapping("/logout")
-    public Result logout(){
+    public Result logout() {
         String number = UserHolder.getLoginHolder().getNumber();
-        usersService.changeStatus(0,number);
+        usersService.changeStatus(0, number);
         return Result.ok();
     }
 
     @Operation(summary = "获取用户状态")
     @GetMapping("/status")
-    public Result<Users> getStatus(@RequestParam Integer userId){
+    public Result<Users> getStatus(@RequestParam Integer userId) {
         Users users = usersService.getById(userId);
         return Result.ok(users);
     }
 
     @Operation(summary = "修改用户状态")
     @PostMapping("/status")
-    public Result changeStatus(@RequestBody Integer status){
+    public Result changeStatus(@RequestBody Integer status) {
         String number = UserHolder.getLoginHolder().getNumber();
-        usersService.changeStatus(status,number);
+        usersService.changeStatus(status, number);
         return Result.ok();
     }
 
