@@ -22,4 +22,6 @@ public interface IFriendsService extends IService<Friends> {
     void acceptOrRejectFriend(Integer relationId, Integer status);
 
     List<FriendVo> friendList(Integer userId);
+
+    Integer getMessageCount(Integer userId, Integer relationId);
 }

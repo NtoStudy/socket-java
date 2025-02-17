@@ -56,7 +56,7 @@ public class UsersController {
     }
 
     @Operation(summary = "获取用户状态")
-    @GetMapping("/status")
+        @GetMapping("/status")
     public Result<Users> getStatus(@RequestParam Integer userId) {
         Users users = usersService.getById(userId);
         return Result.ok(users);

@@ -38,4 +38,13 @@
           AND f.status = 1
         ORDER BY friendId;
     </select>
+    <select id="getMessageCount" resultType="java.lang.Integer">
+        select COUNT(*)
+        from messages
+        where receiver_id = #{userId}
+          and sender_id = #{friendId}
+          and is_read = 0
+    </select>
+
+
 </mapper>

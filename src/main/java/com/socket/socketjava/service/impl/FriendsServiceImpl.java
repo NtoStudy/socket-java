@@ -67,5 +67,14 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         return friendsMapper.selectFriendsList(userId);
     }
 
+    @Override
+    public Integer getMessageCount(Integer userId, Integer relationId) {
+        Friends friends = getById(relationId);
+        Integer friendId = friends.getFriendId();
+        Integer count =  friendsMapper.getMessageCount(userId,friendId);
+        if(count <=99 )return count;
+        else return 100;
+    }
+
 
 }

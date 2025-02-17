@@ -20,4 +20,7 @@ public interface FriendsMapper extends BaseMapper<Friends> {
     List <AcceptFriendVo> selectByReceiverId(Integer userId);
 
     List<FriendVo> selectFriendsList(Integer userId);
+
+
+    Integer getMessageCount(Integer userId, Integer friendId);
 }

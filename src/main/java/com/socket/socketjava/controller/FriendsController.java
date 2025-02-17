@@ -57,6 +57,13 @@ public class FriendsController {
         return Result.ok(friendList);
     }
 
+    @GetMapping("/messageCount")
+    @Operation(summary = "查询好友消息数量")
+    public Result messageCount(Integer relationId){
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        Integer count =  ifriendsService.getMessageCount(userId,relationId);
+        return Result.ok(count);
+    }
 
 
 }

@@ -32,7 +32,18 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
     @Override
     public MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
+
         List<Messages> messagesList = messagesMapper.getHistoryList(userId, receiverId);
+        // 将是否已读消息设置为1
+        for (Messages messages : messagesList) {
+            Integer messageId = messages.getMessageId();
+            LambdaUpdateWrapper<Messages> messagesLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            messagesLambdaUpdateWrapper
+                    .eq(Messages::getMessageId, messageId)
+                    .eq(Messages::getReceiverId, userId)
+                    .set(Messages::getIsRead, 1);
+            update(messagesLambdaUpdateWrapper);
+        }
         PageInfo<Messages> pageInfo = new PageInfo<>(messagesList);
         MessageListDTO<Messages> messagesMessageListDTO = new MessageListDTO<>();
         messagesMessageListDTO.setTotal(pageInfo.getTotal());
