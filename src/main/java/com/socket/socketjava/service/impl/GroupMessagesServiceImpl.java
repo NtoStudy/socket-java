@@ -1,5 +1,6 @@
 package com.socket.socketjava.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.socket.socketjava.domain.dto.MessageListDTO;
@@ -31,6 +32,18 @@ public class GroupMessagesServiceImpl extends ServiceImpl<GroupMessagesMapper, G
     public MessageListDTO<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<GroupMessages> groupMessagesList = groupMessagesMapper.getHistoryList(userId, chatRoomId);
+
+        for (GroupMessages groupMessages : groupMessagesList) {
+            Integer messageId = groupMessages.getMessageId();
+            LambdaUpdateWrapper<GroupMessages> groupMessagesLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            groupMessagesLambdaUpdateWrapper
+                    .eq(GroupMessages::getMessageId, messageId)
+                    .eq(GroupMessages::getChatRoomId, chatRoomId)
+                    .set(GroupMessages::getIsRead, 1);
+            update(groupMessagesLambdaUpdateWrapper);
+        }
+
+
         PageInfo<GroupMessages> groupMessagesPageInfo = new PageInfo<>(groupMessagesList);
         MessageListDTO<GroupMessages> groupMessagesMessageListDTO = new MessageListDTO<>();
         groupMessagesMessageListDTO.setTotal(groupMessagesPageInfo.getTotal());

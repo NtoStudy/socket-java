@@ -7,7 +7,7 @@
         WHERE deleted_by_admin = 0
           AND (deleted_by_users IS NULL OR deleted_by_users NOT LIKE CONCAT('%', #{userId}, '%'))
           AND chat_room_id = #{chatRoomId}
-        ORDER BY sent_time
+        ORDER BY sent_time desc
     </select>
 
     <update id="updateByMessageId">

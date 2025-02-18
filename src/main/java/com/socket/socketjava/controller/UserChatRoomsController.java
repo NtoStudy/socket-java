@@ -62,6 +62,13 @@ public class UserChatRoomsController {
         return Result.ok(usersId);
     }
 
+    @Operation(summary = "获取群聊未读消息")
+    @GetMapping("/messageCount")
+    public Result messageCount(Integer roomId){
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        Integer count = userChatRoomsService.getMessageCount(userId,roomId);
+        return Result.ok(count);
+    }
 
 
 }

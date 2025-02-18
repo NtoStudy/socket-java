@@ -13,7 +13,7 @@ public class FriendVo {
 
     private String username;
 
-    private String number;
+    private Integer number;
 
     private  String avatarUrl;
 

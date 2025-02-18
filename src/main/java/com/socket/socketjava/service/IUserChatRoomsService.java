@@ -24,4 +24,6 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     List<ChatRoomListVo> getRoomList(Integer userId);
 
     List<Integer> getRoomUsers(Integer roomId);
+
+    Integer getMessageCount(Integer userId, Integer roomId);
 }

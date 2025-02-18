@@ -2,10 +2,7 @@ package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.socket.socketjava.domain.pojo.ChatRooms;
-import com.socket.socketjava.domain.pojo.Notifications;
-import com.socket.socketjava.domain.pojo.UserChatRooms;
-import com.socket.socketjava.domain.pojo.Users;
+import com.socket.socketjava.domain.pojo.*;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.mapper.ChatRoomsMapper;
@@ -40,6 +37,8 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     private NotificationsMapper notificationsMapper;
     @Autowired
     private UsersMapper usersMapper;
+    @Autowired
+    private GroupMessagesServiceImpl groupMessagesService;
 
     @Override
     public void createChatRoom(Integer userId, CreateRoomVo createRoomVo) {
@@ -98,5 +97,19 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                 .eq(UserChatRooms::getStatus, 1);
         List<UserChatRooms> userChatRooms = userChatRoomsMapper.selectList(userChatRoomsLambdaQueryWrapper);
         return userChatRooms.stream().map(UserChatRooms::getUserId).toList();
+    }
+
+    @Override
+    public Integer getMessageCount(Integer userId, Integer roomId) {
+        // 根据roomId来查询
+        LambdaQueryWrapper<GroupMessages> groupMessagesLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        // 查询未读的消息需要的条件，chatroom，sender_id
+        groupMessagesLambdaQueryWrapper
+                .eq(GroupMessages::getChatRoomId, roomId)
+                .ne(GroupMessages::getSenderId,userId)
+                .eq(GroupMessages::getIsRead,0);
+        Integer count = Math.toIntExact(groupMessagesService.count(groupMessagesLambdaQueryWrapper));
+        if(count<=99)return count;
+        else return 100;
     }
 }
