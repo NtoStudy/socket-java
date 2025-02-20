@@ -55,8 +55,15 @@ public class UsersController {
         return Result.ok();
     }
 
-    @Operation(summary = "获取用户状态")
-        @GetMapping("/status")
+    @Operation(summary = "获取用户信息")
+    @GetMapping("/info")
+    public Result<Users> getUserInfo() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        return Result.ok(usersService.getById(userId));
+    }
+
+    @Operation(summary = "根据id获取用户信息")
+    @GetMapping("/infoById")
     public Result<Users> getStatus(@RequestParam Integer userId) {
         Users users = usersService.getById(userId);
         return Result.ok(users);

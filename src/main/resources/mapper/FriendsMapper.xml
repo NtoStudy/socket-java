@@ -43,7 +43,15 @@
           and sender_id = #{friendId}
           and is_read = 0
     </select>
-
+    <select id="getFriendByRelationId" resultType="java.lang.Integer"
+            parameterType="java.lang.Integer">
+        SELECT CASE
+                   WHEN user_id = #{userId} THEN friend_id
+                   WHEN friend_id = #{userId} THEN user_id
+                   END AS result
+        FROM friends
+        WHERE relation_id = #{relationId};
+    </select>
 
 
 </mapper>

@@ -69,8 +69,8 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
 
     @Override
     public Integer getMessageCount(Integer userId, Integer relationId) {
-        Friends friends = getById(relationId);
-        Integer friendId = friends.getFriendId();
+        // 在这里的查询有问题，因为我的userId是固定的，所以要从relationId去判断一下
+        Integer friendId  =  friendsMapper.getFriendByRelationId(userId,relationId);
         Integer count =  friendsMapper.getMessageCount(userId,friendId);
         if(count <=99 )return count;
         else return 100;

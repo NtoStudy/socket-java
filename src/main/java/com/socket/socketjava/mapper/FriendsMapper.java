@@ -24,4 +24,6 @@ public interface FriendsMapper extends BaseMapper<Friends> {
 
     Integer getMessageCount(Integer userId, Integer friendId);
 
+
+    Integer getFriendByRelationId(Integer userId, Integer relationId);
 }
