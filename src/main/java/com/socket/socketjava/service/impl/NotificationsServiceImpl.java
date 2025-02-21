@@ -42,7 +42,7 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
         for (AcceptFriendVo acceptFriendVo : acceptFriendVoList) {
             acceptFriendVo.setStatus(1);
         }
-        // 将notifications表中的状态改为1
+        // 将notifications表中的状态改为1,表示已经查过
         LambdaUpdateWrapper<Notifications> notificationsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         notificationsLambdaUpdateWrapper
                 .eq(Notifications::getReceiverId, userId)

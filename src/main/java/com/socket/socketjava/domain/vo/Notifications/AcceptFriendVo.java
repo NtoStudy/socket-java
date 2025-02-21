@@ -4,6 +4,8 @@ package com.socket.socketjava.domain.vo.Notifications;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 
 @Data
 public class AcceptFriendVo {
@@ -25,6 +27,9 @@ public class AcceptFriendVo {
 
     @ApiModelProperty(value = "好友关系状态,0未接受，1已接受，2已拒绝")
     private Integer status;
+
+    @ApiModelProperty(value = "申请时间")
+    private String createdAt;
 
     @ApiModelProperty(value = "通知内容")
     private String content;

@@ -9,11 +9,12 @@
                u.username,
                u.number,
                u.avatar_url,
-               n.content
+               n.content,
+               n.created_at
         from friends f
                  join users u on f.user_id = u.user_id
                  join notifications n on n.related_id = f.relation_id
-        where f.friend_id = #{userId}
+        where f.friend_id = #{userId} and n.type = 'friend'
     </select>
 
 
