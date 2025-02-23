@@ -14,6 +14,7 @@
                  JOIN user_chat_rooms ucr ON cr.room_id = ucr.room_id
                  JOIN notifications n ON cr.room_id = n.related_id AND ucr.room_id = cr.room_id
         WHERE ucr.user_id = #{userId}
-          AND n.receiver_id = #{userId};
+          AND n.receiver_id = #{userId}
+        AND n.type = 'chatroom'
     </select>
 </mapper>

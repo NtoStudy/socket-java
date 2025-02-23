@@ -39,9 +39,6 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
     public List<AcceptFriendVo> selectFriend(Integer userId) {
         // 从这里可以查到relationId userId username number avatarUrl status
         List<AcceptFriendVo> acceptFriendVoList = friendsMapper.selectByReceiverId(userId);
-        for (AcceptFriendVo acceptFriendVo : acceptFriendVoList) {
-            acceptFriendVo.setStatus(1);
-        }
         // 将notifications表中的状态改为1,表示已经查过
         LambdaUpdateWrapper<Notifications> notificationsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         notificationsLambdaUpdateWrapper

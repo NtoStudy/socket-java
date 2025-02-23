@@ -10,7 +10,8 @@
                u.number,
                u.avatar_url,
                n.content,
-               n.created_at
+               n.created_at,
+               f.status
         from friends f
                  join users u on f.user_id = u.user_id
                  join notifications n on n.related_id = f.relation_id
