@@ -36,6 +36,9 @@ public class ChatRooms implements Serializable {
     @ApiModelProperty(value = "聊天室名称")
     private String roomName;
 
+    @ApiModelProperty(value = "群号")
+    private String groupNumber;
+
     @ApiModelProperty(value = "聊天室头像")
     private String avatarUrl;
 

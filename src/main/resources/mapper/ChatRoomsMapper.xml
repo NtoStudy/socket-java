@@ -12,9 +12,26 @@
                         n.content
         FROM chat_rooms cr
                  JOIN user_chat_rooms ucr ON cr.room_id = ucr.room_id
-                 JOIN notifications n ON cr.room_id = n.related_id AND ucr.room_id = cr.room_id
+                 JOIN notifications n ON cr.room_id = n.related_id and n.receiver_id
         WHERE ucr.user_id = #{userId}
-          AND n.receiver_id = #{userId}
-        AND n.type = 'chatroom'
+          and n.receiver_id = #{userId}
+          AND n.type = 'chatroom'
+    </select>
+
+    <select id="selectManager" resultType="com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo"
+            parameterType="java.lang.Integer">
+        SELECT DISTINCT cr.room_id,
+                        cr.room_name,
+                        cr.creator_id,
+                        cr.avatar_url,
+                        ucr.status,
+                        n.content
+        FROM chat_rooms cr
+                 JOIN user_chat_rooms ucr ON cr.room_id = ucr.room_id
+                 JOIN notifications n ON cr.room_id = n.related_id and n.receiver_id
+        WHERE n.receiver_id = #{userId}
+          AND n.type = 'chatroom'
+          AND n.content LIKE '%申请%'
+
     </select>
 </mapper>

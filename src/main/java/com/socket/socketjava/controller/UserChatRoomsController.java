@@ -1,9 +1,12 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.socket.socketjava.domain.pojo.ChatRooms;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.result.Result;
+import com.socket.socketjava.service.IChatRoomsService;
 import com.socket.socketjava.service.IUserChatRoomsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,13 +31,32 @@ public class UserChatRoomsController {
 
     @Autowired
     private IUserChatRoomsService userChatRoomsService;
+    @Autowired
+    private IChatRoomsService ChatRoomsService;
 
     @PostMapping("/create")
     @Operation(summary = "新建群聊")
     public Result create(@RequestBody CreateRoomVo createRoomVo){
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        userChatRoomsService.createChatRoom(userId,createRoomVo);
-        return Result.ok("创建成功");
+        String groupNumber =  userChatRoomsService.createChatRoom(userId,createRoomVo);
+        return Result.ok(groupNumber);
+    }
+
+    @GetMapping("/inquire")
+    @Operation(summary = "查询群聊")
+    public Result<ChatRooms> inquire(String groupNumber){
+        LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber,groupNumber);
+        ChatRooms chatRoom = ChatRoomsService.getOne(chatRoomsLambdaQueryWrapper);
+        return Result.ok(chatRoom);
+    }
+
+    @PostMapping("/addgroup")
+    @Operation(summary = "申请加入群聊")
+    public Result addGroup(String groupNumber){
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.addGroup(userId,groupNumber);
+        return Result.ok("申请成功");
     }
 
     @PutMapping("/accept")

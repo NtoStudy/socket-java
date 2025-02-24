@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface IUserChatRoomsService extends IService<UserChatRooms> {
 
-    void createChatRoom(Integer userId, CreateRoomVo createRoomVo);
+    String createChatRoom(Integer userId, CreateRoomVo createRoomVo);
 
     void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status);
 
@@ -26,4 +26,6 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     List<Integer> getRoomUsers(Integer roomId);
 
     Integer getMessageCount(Integer userId, Integer roomId);
+
+    void addGroup(Integer userId, String groupNumber);
 }

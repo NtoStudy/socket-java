@@ -57,6 +57,16 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
                 .eq(Notifications::getReceiverId, userId)
                 .set(Notifications::getStatus, 1);
         this.update(notificationsLambdaUpdateWrapper);
-        return chatRoomsMapper.selectByCreatorId(userId);
+        List<AcceptRoomsVo> acceptRoomsVos = chatRoomsMapper.selectByCreatorId(userId);
+        List<AcceptRoomsVo> acceptRoomsVoss = chatRoomsMapper.selectManager(userId);
+
+        // 将acceptRoomsVos和acceptRoomsVoss合并
+        if (acceptRoomsVos != null && acceptRoomsVoss != null) {
+            acceptRoomsVos.addAll(acceptRoomsVoss);
+        } else if (acceptRoomsVos == null) {
+            acceptRoomsVos = acceptRoomsVoss;
+        }
+
+        return acceptRoomsVos;
     }
 }

@@ -1,6 +1,7 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
@@ -62,10 +63,12 @@ public class UsersController {
         return Result.ok(usersService.getById(userId));
     }
 
-    @Operation(summary = "根据id获取用户信息")
-    @GetMapping("/infoById")
-    public Result<Users> getStatus(@RequestParam Integer userId) {
-        Users users = usersService.getById(userId);
+    @Operation(summary = "根据number获取用户信息")
+    @GetMapping("/infoByNumber")
+    public Result<Users> getStatus(@RequestParam String number) {
+        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        usersLambdaQueryWrapper.eq(Users::getNumber, number);
+        Users users = usersService.getOne(usersLambdaQueryWrapper);
         return Result.ok(users);
     }
 

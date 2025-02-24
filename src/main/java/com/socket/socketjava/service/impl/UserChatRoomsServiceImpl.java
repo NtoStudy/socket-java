@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * <p>
@@ -40,12 +41,15 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     @Autowired
     private GroupMessagesServiceImpl groupMessagesService;
 
+
     @Override
-    public void createChatRoom(Integer userId, CreateRoomVo createRoomVo) {
+    public String createChatRoom(Integer userId, CreateRoomVo createRoomVo) {
         // 新建一个聊天室 插入到聊天室表
         ChatRooms chatRooms = new ChatRooms();
         chatRooms.setRoomName(createRoomVo.getRoomName());
         chatRooms.setCreatorId(userId);
+        String groupNumber = generateUniqueNumber();
+        chatRooms.setGroupNumber(groupNumber);
         chatRoomsMapper.insert(chatRooms);
         // 通过用户的id获取用户的username
         Integer roomId = chatRooms.getRoomId();
@@ -72,7 +76,56 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                             .setStatus(0)
             );
         }
+        return username;
     }
+
+    /**
+     * 随机生成首位不为0的十位数字
+     *
+     * @return
+     */
+
+    public String generateRandomNumber() {
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        // 生成第一个数字，确保它不是0
+        int firstDigit = random.nextInt(9) + 1; // 生成1到9之间的数字
+        sb.append(firstDigit);
+
+        // 生成剩余的9个数字
+        for (int i = 1; i < 10; i++) {
+            sb.append(random.nextInt(10));
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 判断生成的十位数字数据库中是否存在
+     *
+     * @param number
+     * @return
+     */
+    public boolean isNumberExists(String number) {
+        LambdaQueryWrapper<Users> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Users::getNumber, number);
+        return usersMapper.selectOne(wrapper) != null;
+    }
+
+    /**
+     * 生成唯一十位数字
+     *
+     * @return
+     */
+    public String generateUniqueNumber() {
+        String number;
+        do {
+            number = generateRandomNumber();
+        } while (isNumberExists(number));
+        return number;
+    }
+
 
     @Override
     public void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status) {
@@ -106,10 +159,36 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
         // 查询未读的消息需要的条件，chatroom，sender_id
         groupMessagesLambdaQueryWrapper
                 .eq(GroupMessages::getChatRoomId, roomId)
-                .ne(GroupMessages::getSenderId,userId)
-                .eq(GroupMessages::getIsRead,0);
+                .ne(GroupMessages::getSenderId, userId)
+                .eq(GroupMessages::getIsRead, 0);
         Integer count = Math.toIntExact(groupMessagesService.count(groupMessagesLambdaQueryWrapper));
-        if(count<=99)return count;
+        if (count <= 99) return count;
         else return 100;
+    }
+
+    @Override
+    public void addGroup(Integer userId, String groupNumber) {
+        // 从user表中查到userName
+        Users users = usersMapper.selectById(userId);
+        String username = users.getUsername();
+        // 从chatRooms表中查到roomId
+        LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber, groupNumber);
+        ChatRooms chatRoom = chatRoomsMapper.selectOne(chatRoomsLambdaQueryWrapper);
+        Integer roomId = chatRoom.getRoomId();
+        // 先保存到userChatRooms表中
+        UserChatRooms userChatRooms = new UserChatRooms();
+        userChatRooms.setRoomId(roomId)
+                .setUserId(userId)
+                .setStatus(0);
+        this.save(userChatRooms);
+
+        // 保存到系统通知表中，因为要通知对方
+        notificationsMapper.insert(new Notifications()
+                .setReceiverId(chatRoom.getCreatorId())
+                .setRelatedId(chatRoom.getRoomId())
+                .setContent(username + "申请加入群聊" + chatRoom.getRoomName())
+                .setType("chatroom")
+                .setStatus(0));
     }
 }

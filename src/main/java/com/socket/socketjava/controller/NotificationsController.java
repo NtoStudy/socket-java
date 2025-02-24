@@ -58,7 +58,7 @@ public class NotificationsController {
 
 
     @GetMapping("/chatroom")
-    @Operation(summary = "未处理的群聊邀请")
+    @Operation(summary = "未处理的群聊消息")
     public Result<List<AcceptRoomsVo>> noAcceptRooms() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<AcceptRoomsVo> acceptRoomsVoList = iNotificationsService.selectRooms(userId);
