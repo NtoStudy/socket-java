@@ -22,3 +22,10 @@ pagehelper:
   reasonable: true
   support-methods-arguments: true
   params: count=countSql
+
+aliyun:
+  oss:
+    endpoint: ${aliyun.oss.endpoint}  # 替换为你的 OSS 服务 endpoint
+    accessKeyId: ${aliyun.oss.accessKeyId}        # 替换为你的 AccessKeyId
+    accessKeySecret: ${aliyun.oss.accessKeySecret} # 替换为你的 AccessKeySecret
+    bucketName: ${aliyun.oss.bucketName}           # 替换为你的 Bucket 名称

@@ -20,23 +20,25 @@
 
 
     <select id="selectFriendsList" resultType="com.socket.socketjava.domain.vo.Friends.FriendVo">
-        SELECT f.relation_id AS relationId,
-               CASE
-                   WHEN f.user_id = #{userId} THEN f.friend_id
-                   ELSE f.user_id
-                   END       AS friendId,
-               f.status      AS relationStatus,
+        SELECT f.relation_id                                     AS relationId,
+               IF(f.user_id = #{userId}, f.friend_id, f.user_id) AS friendId,
+               f.status                                          AS relationStatus,
                u.username,
                u.number,
-               u.avatar_url  AS avatarUrl,
-               u.status      AS userStatus
+               u.avatar_url                                      AS avatarUrl,
+               u.status                                          AS userStatus,
+               MAX(m.sent_time)                                  AS lastMessageTime
         FROM friends f
                  JOIN users u ON
             (f.user_id = #{userId} AND u.user_id = f.friend_id)
                 OR (f.friend_id = #{userId} AND u.user_id = f.user_id)
+                 LEFT JOIN messages m ON
+            ((f.user_id = m.sender_id AND f.friend_id = m.receiver_id AND m.deleted_by_sender = 0)
+                OR (f.user_id = m.receiver_id AND f.friend_id = m.sender_id AND m.deleted_by_receiver = 0))
         WHERE (f.user_id = #{userId} OR f.friend_id = #{userId})
           AND f.status = 1
-        ORDER BY friendId;
+        GROUP BY f.relation_id, f.user_id, f.friend_id, f.status, u.username, u.number, u.avatar_url, u.status
+        ORDER BY lastMessageTime DESC;
     </select>
     <select id="getMessageCount" resultType="java.lang.Integer">
         select COUNT(*)
