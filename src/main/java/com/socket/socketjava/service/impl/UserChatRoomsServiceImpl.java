@@ -132,7 +132,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
         // 这里的userId代指的是 "登录者的id也就是notifications表中的receiverId"
         // roomId关联user_chat_rooms表中的room_id来查询出聊天室信息，并且userId和这个表中的user_id相同然后修改状态
         LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
+        userChatRoomsLambdaUpdateWrapper
                 .eq(UserChatRooms::getRoomId, roomId)
                 .set(UserChatRooms::getStatus, status);
         this.update(userChatRoomsLambdaUpdateWrapper);

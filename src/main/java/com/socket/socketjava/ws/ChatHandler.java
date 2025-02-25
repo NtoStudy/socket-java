@@ -2,6 +2,9 @@ package com.socket.socketjava.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.service.IMessagesService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +16,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -29,8 +34,19 @@ public class ChatHandler extends TextWebSocketHandler {
     // 存储在线用户的 WebSocket 会话，使用 ConcurrentHashMap 支持高并发
     private static final Map<Integer, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule()
+                    .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER))
+            )
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 设置目标时区
+
+
     /**
      * 在建立连接后执行的操作
+     *
      * @param session 当前用户的 WebSocket 会话
      * @throws Exception 可能抛出的异常
      */
@@ -44,52 +60,45 @@ public class ChatHandler extends TextWebSocketHandler {
 
     /**
      * 处理接收到的文本消息
+     *
      * @param session 当前用户的 WebSocket 会话
      * @param message 接收到的文本消息
      * @throws IOException 当消息处理中发生 I/O 错误
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
-        // 1. 解析接收到的消息为 Messages 对象
-        Messages messages = null;
         try {
-            messages = new ObjectMapper().readValue(message.getPayload(), Messages.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return;
+            // 1. 解析消息
+            Messages messages = objectMapper.readValue(message.getPayload(), Messages.class);
+            messages.setSentTime(LocalDateTime.now());
+            messages.setSenderId((Integer) session.getAttributes().get("userId"));
+
+            // 2. 验证消息有效性
+            if (messages.getSenderId() == null || messages.getReceiverId() == null || messages.getContent() == null) {
+                log.error("Invalid message: missing required fields");
+                return;
+            }
+
+            // 3. 保存到数据库
+            iMessagesService.save(messages);
+
+            // 4. 转发消息给接收方
+            WebSocketSession receiverSession = onlineUsers.get(messages.getReceiverId());
+            if (receiverSession != null && receiverSession.isOpen()) {
+                String response = objectMapper.writeValueAsString(messages);
+                receiverSession.sendMessage(new TextMessage(response));
+            }
+        } catch (Exception e) {
+            log.error("Error processing message: {}", e.getMessage(), e);
         }
 
-        // 2. 设置消息发送者的 ID
-        Integer userId = (Integer) session.getAttributes().get("userId");
-        messages.setSenderId(userId);
-
-        // 3. 验证消息是否有效
-        if (messages.getSenderId() == null || messages.getReceiverId() == null || messages.getContent() == null) {
-            return;
-        }
-
-        // 4. 保存消息到数据库
-        messages.setIsRead(0);
-        messages.setDeletedBySender(0);
-        messages.setDeletedByReceiver(0);
-        iMessagesService.save(messages);
-
-        // 5. 将消息推送给接收者
-        WebSocketSession receiverSession = onlineUsers.get(messages.getReceiverId());
-        log.info("Receiver session: {}", receiverSession);
-        if (receiverSession != null && receiverSession.isOpen()) {
-            String response = new ObjectMapper().writeValueAsString(messages);
-            receiverSession.sendMessage(new TextMessage(response));
-            log.info("Message sent to receiver: " + new TextMessage(response));
-        } else {
-            System.out.println("Receiver session not found or closed");
-        }
     }
 
     /**
      * 在连接关闭后执行的操作
+     *
      * @param session 当前用户的 WebSocket 会话
-     * @param status 连接关闭的状态
+     * @param status  连接关闭的状态
      * @throws Exception 可能抛出的异常
      */
     @Override
@@ -99,4 +108,6 @@ public class ChatHandler extends TextWebSocketHandler {
         onlineUsers.remove(userId);
         System.out.println("WebSocket connection closed for user: " + userId);
     }
+
+
 }

@@ -33,7 +33,6 @@ public class UserHandshakeInterceptor implements HandshakeInterceptor {
         String query = request.getURI().getQuery();
         //去除query的前6个字符
         String token = query.substring(6);
-        log.info("token的值为{}", token);
         Claims claims = JwtUtil.parseToken(token);
         Integer userId = claims.get("userId", Integer.class);
 
