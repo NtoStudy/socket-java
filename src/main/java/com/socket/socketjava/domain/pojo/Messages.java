@@ -38,6 +38,12 @@ public class Messages implements Serializable {
     @ApiModelProperty(value = "接收者ID")
     private Integer receiverId;
 
+    @ApiModelProperty(value="群聊Id")
+    private Integer chatRoomId;
+
+    @ApiModelProperty(value = "消息类型")
+    private String type;
+
     @ApiModelProperty(value = "消息内容")
     private String content;
 

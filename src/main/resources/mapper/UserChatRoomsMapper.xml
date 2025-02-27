@@ -2,15 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.socket.socketjava.mapper.UserChatRoomsMapper">
 
-
     <select id="selectRoomList" resultType="com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo">
         select cr.room_id,
                ucr.user_id,
                cr.room_name,
-               cr.avatar_url
+               cr.avatar_url,
+               gm.sent_time
         from user_chat_rooms ucr
                  join chat_rooms cr on cr.room_id = ucr.room_id
+                 left join (select chat_room_id, max(sent_time) as sent_time
+                            from group_messages
+                            where (deleted_by_admin = 0)
+                              and (JSON_CONTAINS(deleted_by_users, CAST(#{userId} AS CHAR)) = 0 or
+                                   deleted_by_users is null)
+                            group by chat_room_id) latest_gm on ucr.room_id = latest_gm.chat_room_id
+                 left join group_messages gm
+                           on latest_gm.chat_room_id = gm.chat_room_id and latest_gm.sent_time = gm.sent_time
         where ucr.user_id = #{userId}
           and ucr.status = 1
+        order by gm.sent_time desc
     </select>
+
+
 </mapper>

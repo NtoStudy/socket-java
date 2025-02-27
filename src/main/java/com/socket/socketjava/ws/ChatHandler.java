@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.socket.socketjava.domain.pojo.Messages;
+import com.socket.socketjava.service.IGroupMessagesService;
 import com.socket.socketjava.service.IMessagesService;
+import com.socket.socketjava.service.IUserChatRoomsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
@@ -17,7 +20,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,6 +35,10 @@ public class ChatHandler extends TextWebSocketHandler {
     // 注入消息服务接口
     @Autowired
     private IMessagesService iMessagesService;
+    @Autowired
+    private IGroupMessagesService iGroupMessagesService;
+    @Autowired
+    private IUserChatRoomsService iUserChatRoomsService;
 
     // 存储在线用户的 WebSocket 会话，使用 ConcurrentHashMap 支持高并发
     private static final Map<Integer, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
@@ -55,7 +64,7 @@ public class ChatHandler extends TextWebSocketHandler {
         // 获取用户信息并存储 session
         Integer userId = (Integer) session.getAttributes().get("userId");
         onlineUsers.put(userId, session);
-        System.out.println("WebSocket connection established for user: " + userId);
+        System.out.println("当前websocket登录id" + userId);
     }
 
     /**
@@ -70,24 +79,57 @@ public class ChatHandler extends TextWebSocketHandler {
         try {
             // 1. 解析消息
             Messages messages = objectMapper.readValue(message.getPayload(), Messages.class);
+            log.info(String.valueOf(messages));
             messages.setSentTime(LocalDateTime.now());
             messages.setSenderId((Integer) session.getAttributes().get("userId"));
 
             // 2. 验证消息有效性
-            if (messages.getSenderId() == null || messages.getReceiverId() == null || messages.getContent() == null) {
+            if (messages.getSenderId() == null ||  messages.getContent() == null) {
                 log.error("Invalid message: missing required fields");
                 return;
             }
 
-            // 3. 保存到数据库
-            iMessagesService.save(messages);
+            if (Objects.equals(messages.getType(), "friend")) {
+                Messages messagesToSave = new Messages();
+                messagesToSave.setSentTime(messages.getSentTime());
+                messagesToSave.setContent(messages.getContent());
+                messagesToSave.setReceiverId(messages.getReceiverId());
+                messagesToSave.setSenderId(messages.getSenderId());
+                messagesToSave.setIsRead(1);
+                // 3. 保存到数据库
+                iMessagesService.save(messagesToSave);
 
-            // 4. 转发消息给接收方
-            WebSocketSession receiverSession = onlineUsers.get(messages.getReceiverId());
-            if (receiverSession != null && receiverSession.isOpen()) {
-                String response = objectMapper.writeValueAsString(messages);
-                receiverSession.sendMessage(new TextMessage(response));
+                // 4. 转发消息给接收方
+                WebSocketSession receiverSession = onlineUsers.get(messagesToSave.getReceiverId());
+                if (receiverSession != null && receiverSession.isOpen()) {
+                    String response = objectMapper.writeValueAsString(messagesToSave);
+                    receiverSession.sendMessage(new TextMessage(response));
+                }
+            } else if (Objects.equals(messages.getType(), "group")) {
+                GroupMessages groupMessages = new GroupMessages();
+                groupMessages.setSenderId(messages.getSenderId());
+                groupMessages.setChatRoomId(messages.getChatRoomId());
+                groupMessages.setContent(messages.getContent());
+                groupMessages.setSentTime(messages.getSentTime());
+                groupMessages.setIsRead(1);
+                // 保存到数据库
+                iGroupMessagesService.save(groupMessages);
+
+                // 转到消息给所有人
+                List<Integer> groupNumber = iUserChatRoomsService.getRoomUsers(groupMessages.getChatRoomId());
+
+                for (Integer memberId : groupNumber) {
+                    if (!Objects.equals(memberId, messages.getSenderId())) {
+                        WebSocketSession memberSession = onlineUsers.get(memberId);
+                        if (memberSession != null && memberSession.isOpen()) {
+                            String response = objectMapper.writeValueAsString(groupMessages);
+                            memberSession.sendMessage(new TextMessage(response));
+                        }
+                    }
+                }
+
             }
+
         } catch (Exception e) {
             log.error("Error processing message: {}", e.getMessage(), e);
         }
