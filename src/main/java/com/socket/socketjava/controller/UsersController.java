@@ -2,10 +2,13 @@ package com.socket.socketjava.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
+import com.socket.socketjava.service.IFriendsService;
 import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -32,6 +36,8 @@ public class UsersController {
 
     @Autowired
     private IUsersService usersService;
+    @Autowired
+    private IFriendsService iFriendsService;
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
@@ -65,11 +71,36 @@ public class UsersController {
 
     @Operation(summary = "根据number获取用户信息")
     @GetMapping("/infoByNumber")
-    public Result<Users> getStatus(@RequestParam String number) {
+    public Result<FriendIsContainerUser> getStatus(@RequestParam String number) {
+        FriendIsContainerUser friendIsContainerUser = new FriendIsContainerUser();
         LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
         usersLambdaQueryWrapper.eq(Users::getNumber, number);
         Users users = usersService.getOne(usersLambdaQueryWrapper);
-        return Result.ok(users);
+        friendIsContainerUser.setUserName(users.getUsername());
+        friendIsContainerUser.setAvatarUrl(users.getAvatarUrl());
+        friendIsContainerUser.setNumber(users.getNumber());
+        friendIsContainerUser.setUserId(users.getUserId());
+        // 要判断这个人是不是自己，还要判断这个人是不是好友
+        // 是不是自己
+        Integer userId = users.getUserId();
+        Integer userId1 = UserHolder.getLoginHolder().getUserId();
+        log.info("userId:" + userId + "userId1:" + userId1);
+        if (Objects.equals(userId, userId1)) {
+            friendIsContainerUser.setIsUser(1);
+        } else {
+            friendIsContainerUser.setIsUser(0);
+        }
+
+        // userId是我自己的Id,另一个是friendId
+        Integer userIsFriend = iFriendsService.userIsFriend(userId1, friendIsContainerUser.getUserId());
+        log.info("userIsFriend:" + userIsFriend);
+        if (userIsFriend == 1) {
+            friendIsContainerUser.setIsContainer(1);
+        } else {
+            friendIsContainerUser.setIsContainer(0);
+        }
+        // 满足以上则代表，既不是好友，也不是自己
+        return Result.ok(friendIsContainerUser);
     }
 
     @Operation(summary = "修改用户状态")

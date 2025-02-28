@@ -26,4 +26,6 @@ public interface FriendsMapper extends BaseMapper<Friends> {
 
 
     Integer getFriendByRelationId(Integer userId, Integer relationId);
+
+    Integer userIsFriend(Integer userId, Integer friendId);
 }

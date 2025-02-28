@@ -76,5 +76,10 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         else return 100;
     }
 
+    @Override
+    public Integer userIsFriend(Integer userId, Integer friendId) {
+        return friendsMapper.userIsFriend(userId,friendId);
+    }
+
 
 }
