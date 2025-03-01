@@ -41,6 +41,9 @@ public class Messages implements Serializable {
     @ApiModelProperty(value="群聊Id")
     private Integer chatRoomId;
 
+    @ApiModelProperty(value = "消息发送状态")
+    private String messageType;
+
     @ApiModelProperty(value = "消息类型")
     private String type;
 
@@ -58,6 +61,5 @@ public class Messages implements Serializable {
 
     @ApiModelProperty(value = "接收者是否删除该消息")
     private Integer deletedByReceiver;
-
 
 }

@@ -41,6 +41,9 @@ public class GroupMessages implements Serializable {
     @ApiModelProperty(value = "消息内容")
     private String content;
 
+    @ApiModelProperty(value = "消息发送状态")
+    private String messageType;
+
     @ApiModelProperty(value = "发送时间")
     private LocalDateTime sentTime;
 

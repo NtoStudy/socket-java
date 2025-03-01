@@ -76,12 +76,14 @@ public class ChatHandler extends TextWebSocketHandler {
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
+
         try {
             // 1. 解析消息
             Messages messages = objectMapper.readValue(message.getPayload(), Messages.class);
-            log.info(String.valueOf(messages));
+
             messages.setSentTime(LocalDateTime.now());
             messages.setSenderId((Integer) session.getAttributes().get("userId"));
+            log.info("Received message: {}", messages);
 
             // 2. 验证消息有效性
             if (messages.getSenderId() == null ||  messages.getContent() == null) {
@@ -95,6 +97,7 @@ public class ChatHandler extends TextWebSocketHandler {
                 messagesToSave.setContent(messages.getContent());
                 messagesToSave.setReceiverId(messages.getReceiverId());
                 messagesToSave.setSenderId(messages.getSenderId());
+                messagesToSave.setMessageType(messages.getMessageType());
                 messagesToSave.setIsRead(1);
                 // 3. 保存到数据库
                 iMessagesService.save(messagesToSave);
@@ -111,6 +114,7 @@ public class ChatHandler extends TextWebSocketHandler {
                 groupMessages.setChatRoomId(messages.getChatRoomId());
                 groupMessages.setContent(messages.getContent());
                 groupMessages.setSentTime(messages.getSentTime());
+                groupMessages.setMessageType(messages.getMessageType());
                 groupMessages.setIsRead(1);
                 // 保存到数据库
                 iGroupMessagesService.save(groupMessages);
