@@ -1,6 +1,5 @@
 package com.socket.socketjava.ws;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -11,21 +10,21 @@ import com.socket.socketjava.service.IGroupMessagesService;
 import com.socket.socketjava.service.IMessagesService;
 import com.socket.socketjava.service.IUserChatRoomsService;
 import com.socket.socketjava.utils.AliyunOssOperator;
-import com.socket.socketjava.utils.holder.UserHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.socket.BinaryMessage;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -35,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * ChatHandler 类继承自 TextWebSocketHandler，用于处理 WebSocket 文本消息
  */
 @Slf4j
+@RestController
 public class ChatHandler extends BinaryWebSocketHandler {
 
     // 注入消息服务接口
@@ -57,12 +57,12 @@ public class ChatHandler extends BinaryWebSocketHandler {
                     .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER)))
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 设置目标时区
-
     // 保存文件分片的临时存储，key: fileName，value: Map<chunkNumber, chunkData>
     private static final ConcurrentHashMap<String, Map<Integer, byte[]>> tempFileStorage = new ConcurrentHashMap<>();
 
     // 保存文件上传进度，key: fileName，value: Map<totalChunks, uploadedChunks>
     private static final ConcurrentHashMap<String, Map<String, Integer>> uploadProgress = new ConcurrentHashMap<>();
+
 
     /**
      * 在建立连接后执行的操作
@@ -155,140 +155,6 @@ public class ChatHandler extends BinaryWebSocketHandler {
     }
 
     /**
-     * 处理接收到的二进制消息
-     *
-     * @param session 当前用户的 WebSocket 会话
-     * @param message 接收到的二进制消息
-     * @throws IOException 可能抛出的异常
-     */
-    @Override
-    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws IOException {
-        byte[] payload = new byte[message.getPayload().remaining()];
-        message.getPayload().get(payload);
-
-        // 解析元数据和文件分片
-        int metaDataLength = 128; // 元数据长度（假设128字节）
-        String metaDataString = new String(payload, 0, metaDataLength).trim();
-        byte[] chunkData = Arrays.copyOfRange(payload, metaDataLength, payload.length);
-
-        try {
-            // 解析元数据
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> metaData = objectMapper.readValue(metaDataString, Map.class);
-            String messageType = (String) metaData.get("messageType");
-            Integer receiverId = (Integer) metaData.get("receiverId");
-            String type = (String) metaData.get("type");
-            Integer chatRoomId = (Integer) metaData.get("chatRoomId");
-
-            // 存储文件分片
-            int chunkNumber = ByteBuffer.wrap(chunkData, 0, 4).getInt();
-            String fileName = new String(chunkData, 4, 128).trim();
-            byte[] fileChunk = Arrays.copyOfRange(chunkData, 132, chunkData.length);
-
-            // 更新文件分片存储
-            tempFileStorage.computeIfAbsent(fileName, k -> new ConcurrentHashMap<>()).put(chunkNumber, fileChunk);
-
-            // 判断是否是最后一个分片
-            if (isLastChunk(session, fileName, chunkNumber)) {
-                rebuildFile(fileName, messageType, receiverId, chatRoomId, type);
-            }
-        } catch (Exception e) {
-            log.error("Error processing binary message: {}", e.getMessage(), e);
-        }
-    }
-
-    /**
-     * 判断是否是最后一个分片
-     * 假设分片编号从0开始，总分片数由前端通知
-     */
-    private boolean isLastChunk(WebSocketSession session, String fileName, int chunkNumber) {
-        // 前端应在发送文件前发送总分片数
-        // 这里假设总分片数存储在 session 的 attribute 中
-        Map<String, Object> attributes = session.getAttributes();
-        Integer totalChunks = (Integer) attributes.get("totalChunks");
-        if (totalChunks == null) {
-            log.error("Total chunks not found for file: {}", fileName);
-            return false;
-        }
-
-        return chunkNumber == totalChunks - 1;
-    }
-
-    /**
-     * 重组文件
-     */
-    private void rebuildFile(String fileName, String messageType, Integer receiverId, Integer chatRoomId, String type) throws IOException {
-        Map<Integer, byte[]> chunks = tempFileStorage.get(fileName);
-        if (chunks == null || chunks.isEmpty()) {
-            log.error("No chunks found for file: {}", fileName);
-            return;
-        }
-        // 按分片编号排序
-        Map<Integer, byte[]> sortedChunks = new TreeMap<>(chunks);
-        byte[] fileData = new byte[0];
-        for (byte[] chunk : sortedChunks.values()) {
-            byte[] newFileData = new byte[fileData.length + chunk.length];
-            System.arraycopy(fileData, 0, newFileData, 0, fileData.length);
-            System.arraycopy(chunk, 0, newFileData, fileData.length, chunk.length);
-            fileData = newFileData;
-        }
-        // 构建唯一的文件名
-        String objectName = "uploads/" + UUID.randomUUID() + "-" + fileName;
-        // 上传到阿里云 OSS
-        String fileUrl = aliyunOssOperator.uploadBytes(fileData, objectName);
-        // 写入到数据库中
-        if (Objects.equals(type, "friend")) {
-            Messages messages = new Messages();
-            messages.setMessageType(messageType)
-                    .setContent(fileUrl)
-                    .setReceiverId(receiverId)
-                    .setSenderId(UserHolder.getLoginHolder().getUserId())
-                    .setSentTime(LocalDateTime.now())
-                    .setIsRead(1);
-
-            iMessagesService.save(messages);
-
-            WebSocketSession receiverSession = onlineUsers.get(receiverId);
-            if (receiverSession != null && receiverSession.isOpen()) {
-                String response = objectMapper.writeValueAsString(messages);
-                receiverSession.sendMessage(new TextMessage(response));
-            }
-
-        } else if (Objects.equals(type, "group")) {
-            GroupMessages groupMessages = new GroupMessages();
-            groupMessages.setMessageType(messageType)
-                    .setContent(fileUrl)
-                    .setChatRoomId(chatRoomId)
-                    .setSenderId(UserHolder.getLoginHolder().getUserId())
-                    .setSentTime(LocalDateTime.now())
-                    .setIsRead(1);
-            iGroupMessagesService.save(groupMessages);
-            List<Integer> groupMembers = iUserChatRoomsService.getRoomUsers(chatRoomId);
-            for (Integer memberId : groupMembers) {
-                if (Objects.equals(memberId, UserHolder.getLoginHolder().getUserId())) {
-                    continue; // 不需要发送给消息发送者
-                }
-
-                WebSocketSession memberSession = onlineUsers.get(memberId);
-                if (memberSession != null && memberSession.isOpen()) {
-                    String response = objectMapper.writeValueAsString(groupMessages);
-                    memberSession.sendMessage(new TextMessage(response));
-                }
-            }
-        }
-
-        if (fileUrl != null) {
-            log.info("File uploaded to OSS: {}", fileUrl);
-        } else {
-            log.error("Failed to upload file to OSS: {}", fileName);
-        }
-
-        // 清理临时存储
-        tempFileStorage.remove(fileName);
-    }
-
-
-    /**
      * 在连接关闭后执行的操作
      *
      * @param session 当前用户的 WebSocket 会话
@@ -301,6 +167,88 @@ public class ChatHandler extends BinaryWebSocketHandler {
         Integer userId = (Integer) session.getAttributes().get("userId");
         onlineUsers.remove(userId);
         System.out.println("WebSocket connection closed for user: " + userId);
+    }
+
+    @PostMapping("/upload/chunk")
+    public ResponseEntity<String> uploadFileChunk(@RequestParam("file") MultipartFile file,
+                                                  @RequestParam("fileName") String fileName,
+                                                  @RequestParam("chunkNumber") int chunkNumber,
+                                                  @RequestParam("totalChunks") int totalChunks) {
+        try {
+            // 保存文件分片到临时存储
+            tempFileStorage.computeIfAbsent(fileName, k -> new ConcurrentHashMap<>()).put(chunkNumber, file.getBytes());
+            log.info("Chunk {} of {} uploaded for file: {}", chunkNumber, totalChunks, fileName);
+
+            // 判断是否所有分片都已上传完成
+            if (chunkNumber == totalChunks - 1) {
+                // 合并文件分片
+                rebuildFile(fileName, totalChunks);
+            }
+
+            return ResponseEntity.ok("Chunk uploaded successfully");
+        } catch (Exception e) {
+            log.error("Error while uploading chunk", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+        }
+    }
+
+    /**
+     * 重组文件
+     */
+    private void rebuildFile(String fileName, int totalChunks) {
+        Map<Integer, byte[]> chunks = tempFileStorage.get(fileName);
+        if (chunks == null || chunks.size() != totalChunks) {
+            log.error("File chunks incomplete for file: {}", fileName);
+            return;
+        }
+
+        // 按分片编号排序并合并
+        Map<Integer, byte[]> sortedChunks = new TreeMap<>(chunks);
+        byte[] fileData = new byte[0];
+        for (byte[] chunk : sortedChunks.values()) {
+            byte[] newFileData = new byte[fileData.length + chunk.length];
+            System.arraycopy(fileData, 0, newFileData, 0, fileData.length);
+            System.arraycopy(chunk, 0, newFileData, fileData.length, chunk.length);
+            fileData = newFileData;
+        }
+
+        log.info("File reconstructed successfully: {}", fileName);
+        uploadToOss(fileData, fileName);
+        tempFileStorage.remove(fileName); // 清理临时存储
+    }
+
+    private void uploadToOss(byte[] fileData, String fileName) {
+        String objectName = "uploads/" + UUID.randomUUID() + "-" + fileName;
+        String fileUrl = aliyunOssOperator.uploadBytes(fileData, objectName);
+
+        if (fileUrl != null) {
+            log.info("File uploaded to OSS: {}", fileUrl);
+            // 保存文件URL到数据库或返回给前端
+            notifyClient(fileUrl, fileName);
+
+        } else {
+            log.error("Failed to upload file to OSS: {}", fileName);
+        }
+    }
+
+    private void notifyClient(String fileUrl, String fileName) {
+        onlineUsers.forEach((userId, session) -> {
+            if (session.isOpen()) {
+                try {
+                    // 构造消息对象
+                    Map<String, String> message = new HashMap<>();
+                    message.put("type", "file-upload-complete");
+                    message.put("fileName", fileName);
+                    message.put("fileUrl", fileUrl);
+
+                    // 转换为 JSON 并发送
+                    String jsonMessage = objectMapper.writeValueAsString(message);
+                    session.sendMessage(new TextMessage(jsonMessage));
+                } catch (IOException e) {
+                    log.error("Error sending WebSocket message", e);
+                }
+            }
+        });
     }
 
 }
