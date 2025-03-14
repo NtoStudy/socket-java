@@ -10,11 +10,11 @@ import com.socket.socketjava.service.IGroupMessagesService;
 import com.socket.socketjava.service.IMessagesService;
 import com.socket.socketjava.service.IUserChatRoomsService;
 import com.socket.socketjava.utils.AliyunOssOperator;
+import com.socket.socketjava.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +46,8 @@ public class ChatHandler extends BinaryWebSocketHandler {
     private IUserChatRoomsService iUserChatRoomsService;
     @Autowired
     private AliyunOssOperator aliyunOssOperator;
+    @Autowired
+    private RedisUtils redisUtils;
 
     // 存储在线用户的 WebSocket 会话，使用 ConcurrentHashMap 支持高并发
     private static final Map<Integer, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
@@ -114,6 +116,9 @@ public class ChatHandler extends BinaryWebSocketHandler {
                         .setIsRead(1);
                 // 保存到数据库
                 iMessagesService.save(messagesToSave);
+
+                // 清除相关缓存
+                clearChatHistoryCache(messagesToSave.getSenderId(), messagesToSave.getReceiverId());
 
                 // 4. 转发消息给接收方
                 WebSocketSession receiverSession = onlineUsers.get(messagesToSave.getReceiverId());
@@ -249,6 +254,19 @@ public class ChatHandler extends BinaryWebSocketHandler {
                 }
             }
         });
+    }
+
+    /**
+     * 清除聊天历史缓存
+     */
+    private void clearChatHistoryCache(Integer userId, Integer receiverId) {
+        // 清除发送方缓存
+        String senderKeyPattern = String.format("chat:history:%d:%d:*", userId, receiverId);
+        redisUtils.deleteByPattern(senderKeyPattern);
+
+        // 清除接收方缓存
+        String receiverKeyPattern = String.format("chat:history:%d:%d:*", receiverId, userId);
+        redisUtils.deleteByPattern(receiverKeyPattern);
     }
 
 }

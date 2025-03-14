@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.socket.socketjava.domain.menu.UserStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -47,8 +49,7 @@ public class Users implements Serializable {
     @ApiModelProperty(value = "注册时间")
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "用户状态,0离线，1在线")
-    private Integer status;
+    private UserStatus status;
 
 
 }

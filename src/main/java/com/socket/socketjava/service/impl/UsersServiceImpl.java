@@ -1,6 +1,7 @@
 package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
@@ -46,7 +47,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
         }
         // 将用户状态更改为在线
-        usersMapper.updateStatus(1,loginVo.getNumber());
+        usersMapper.updateStatus(UserStatus.ONLINE,loginVo.getNumber());
 
         // 如果所有对实现，则创建jwt令牌
         return JwtUtil.createToken(users.getUserId(), users.getNumber());
@@ -69,7 +70,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
 
     @Override
-    public void changeStatus(Integer status, String number) {
+    public void changeStatus(UserStatus status, String number) {
         usersMapper.updateStatus(status,number);
     }
 

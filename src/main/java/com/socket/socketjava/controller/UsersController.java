@@ -3,6 +3,7 @@ package com.socket.socketjava.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
@@ -58,7 +59,7 @@ public class UsersController {
     @PostMapping("/logout")
     public Result logout() {
         String number = UserHolder.getLoginHolder().getNumber();
-        usersService.changeStatus(0, number);
+        usersService.changeStatus(UserStatus.AWAY, number);
         return Result.ok();
     }
 
@@ -105,7 +106,7 @@ public class UsersController {
 
     @Operation(summary = "修改用户状态")
     @PostMapping("/status")
-    public Result changeStatus(@RequestBody Integer status) {
+    public Result changeStatus(@RequestBody UserStatus status) {
         String number = UserHolder.getLoginHolder().getNumber();
         usersService.changeStatus(status, number);
         return Result.ok();

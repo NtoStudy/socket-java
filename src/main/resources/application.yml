@@ -12,9 +12,23 @@ spring:
     driver-class-name: ${socket.datasource.driver-class-name}
     username: ${socket.datasource.username}
     password: ${socket.datasource.password}
+  data:
+    redis:
+      host: ${socket.redis.host}
+      port: ${socket.redis.port}
+      database: 0
+      timeout: 10000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.socket.socketjava.domain.pojo
+  type-handlers-package: com.socket.socketjava.domain.enums
   configuration:
     map-underscore-to-camel-case: true
 pagehelper:

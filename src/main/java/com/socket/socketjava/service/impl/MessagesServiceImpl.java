@@ -8,6 +8,7 @@ import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.mapper.MessagesMapper;
 import com.socket.socketjava.service.IMessagesService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.socket.socketjava.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,23 +28,45 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
 
     @Autowired
     private MessagesMapper messagesMapper;
+    @Autowired
+    private RedisUtils redisUtils;
 
+    private static final String CHAT_HISTORY_KEY = "chat:history:%d:%d:%d:%d"; // userId:receiverId:pageNum:pageSize
+    private static final long CHAT_HISTORY_TTL = 600; // 缓存10分钟
 
     @Override
     public MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
 
-        List<Messages> messagesList = messagesMapper.getHistoryList(userId, receiverId);
-        // 将是否已读消息设置为1
-        for (Messages messages : messagesList) {
-            Integer messageId = messages.getMessageId();
-            LambdaUpdateWrapper<Messages> messagesLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            messagesLambdaUpdateWrapper
-                    .eq(Messages::getMessageId, messageId)
-                    .eq(Messages::getReceiverId, userId)
-                    .set(Messages::getIsRead, 1);
-            update(messagesLambdaUpdateWrapper);
+        // 构造缓存key
+        String cacheKey = String.format(CHAT_HISTORY_KEY, userId, receiverId, pageNum, pageSize);
+
+        // 尝试从缓存获取
+        MessageListDTO<Messages> cachedResult = (MessageListDTO<Messages>) redisUtils.get(cacheKey);
+        if (cachedResult != null) {
+            return cachedResult;
         }
+
+        // 缓存未命中，从数据库查询
+        PageHelper.startPage(pageNum, pageSize);
+        List<Messages> messagesList = messagesMapper.getHistoryList(userId, receiverId);
+
+        // 将未读消息设置为已读
+        for (Messages messages : messagesList) {
+            if (messages.getIsRead() == 0 && Objects.equals(messages.getReceiverId(), userId)) {
+                Integer messageId = messages.getMessageId();
+                LambdaUpdateWrapper<Messages> messagesLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                messagesLambdaUpdateWrapper
+                        .eq(Messages::getMessageId, messageId)
+                        .eq(Messages::getReceiverId, userId)
+                        .set(Messages::getIsRead, 1);
+                update(messagesLambdaUpdateWrapper);
+                // 更新当前列表中的消息状态
+                messages.setIsRead(1);
+            }
+        }
+
+        // 构造返回结果
         PageInfo<Messages> pageInfo = new PageInfo<>(messagesList);
         MessageListDTO<Messages> messagesMessageListDTO = new MessageListDTO<>();
         messagesMessageListDTO.setTotal(pageInfo.getTotal());
@@ -53,6 +76,10 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
         messagesMessageListDTO.setStartRow(pageInfo.getStartRow());
         messagesMessageListDTO.setEndRow(pageInfo.getEndRow());
         messagesMessageListDTO.setPages(pageInfo.getPages());
+
+
+        redisUtils.set(cacheKey, messagesMessageListDTO, CHAT_HISTORY_TTL);
+
         return messagesMessageListDTO;
     }
 

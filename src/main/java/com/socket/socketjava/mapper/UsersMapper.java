@@ -1,5 +1,6 @@
 package com.socket.socketjava.mapper;
 
+import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -15,5 +16,5 @@ public interface UsersMapper extends BaseMapper<Users> {
 
     Users selectByNumber(String number);
 
-    void updateStatus(Integer status, String number);
+    void updateStatus(UserStatus status, String number);
 }
