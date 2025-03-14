@@ -3,11 +3,9 @@ package com.socket.socketjava.service;
 import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 
-import java.util.List;
 
 /**
  * <p>

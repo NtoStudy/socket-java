@@ -3,7 +3,6 @@ package com.socket.socketjava.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
-import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.mapper.UsersMapper;
@@ -15,7 +14,6 @@ import com.socket.socketjava.utils.exception.socketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -35,9 +33,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public String login(LoginVo loginVo) {
-
         Users users = usersMapper.selectByNumber(loginVo.getNumber());
-
         // 先判断用户名number是否存在
         if(users == null){
             throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);

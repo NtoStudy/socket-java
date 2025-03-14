@@ -4,12 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.socket.socketjava.domain.dto.MessageListDTO;
-import com.socket.socketjava.domain.pojo.ChatRooms;
 import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.socket.socketjava.mapper.GroupMessagesMapper;
 import com.socket.socketjava.service.IGroupMessagesService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class GroupMessagesServiceImpl extends ServiceImpl<GroupMessagesMapper, G
     private GroupMessagesMapper groupMessagesMapper;
 
     @Override
+    @Cacheable(value = "groupChatHistory", key = "'history:' + #chatRoomId + ':' + #pageNum + ':' + #pageSize")
     public MessageListDTO<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<GroupMessages> groupMessagesList = groupMessagesMapper.getHistoryList(userId, chatRoomId);
@@ -57,6 +59,7 @@ public class GroupMessagesServiceImpl extends ServiceImpl<GroupMessagesMapper, G
     }
 
     @Override
+    @CacheEvict(value = "groupChatHistory", allEntries = true)
     public void removeBySenderId(Integer chatRoomId, Integer messageId, Integer userId) {
          // 在这条messageId对应的消息中的deleted_by_users字段中添加userId
         groupMessagesMapper.updateByMessageId(chatRoomId, messageId, userId);

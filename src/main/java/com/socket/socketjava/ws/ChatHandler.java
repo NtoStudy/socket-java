@@ -7,12 +7,14 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.service.impl.MessageHandlerService;
+import com.socket.socketjava.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +29,8 @@ public class ChatHandler extends BinaryWebSocketHandler {
 
     @Autowired
     private MessageHandlerService messageHandlerService;
+    @Autowired
+    private RedisUtils redisUtils;
     // 存储在线用户的 WebSocket 会话，使用 ConcurrentHashMap 支持高并发
     private static final Map<Integer, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
 
@@ -37,12 +41,7 @@ public class ChatHandler extends BinaryWebSocketHandler {
                     .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER)))
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 设置目标时区
-    // 保存文件分片的临时存储，key: fileName，value: Map<chunkNumber, chunkData>
-    private static final ConcurrentHashMap<String, Map<Integer, byte[]>> tempFileStorage = new ConcurrentHashMap<>();
-
-    // 保存文件上传进度，key: fileName，value: Map<totalChunks, uploadedChunks>
-    private static final ConcurrentHashMap<String, Map<String, Integer>> uploadProgress = new ConcurrentHashMap<>();
-
+   
 
     /**
      * 在建立连接后执行的操作
@@ -99,14 +98,24 @@ public class ChatHandler extends BinaryWebSocketHandler {
     private void handleFriendMessage(Messages message, WebSocketSession session) throws IOException {
         Messages savedMessage = messageHandlerService.handleFriendMessage(message);
 
+        // 清除发送者查看与接收者聊天记录的缓存
+        redisUtils.deleteByPattern("privateChatHistory::private:" + savedMessage.getSenderId() + ":" + savedMessage.getReceiverId() + ":*");
+
+        // 清除接收者查看与发送者聊天记录的缓存
+        redisUtils.deleteByPattern("privateChatHistory::private:" + savedMessage.getReceiverId() + ":" + savedMessage.getSenderId() + ":*");
+
         WebSocketSession receiverSession = onlineUsers.get(savedMessage.getReceiverId());
         if (receiverSession != null && receiverSession.isOpen()) {
             String response = objectMapper.writeValueAsString(savedMessage);
             receiverSession.sendMessage(new TextMessage(response));
         }
     }
+
     private void handleGroupMessage(Messages message) throws IOException {
         GroupMessages groupMessage = messageHandlerService.handleGroupMessage(message);
+
+        redisUtils.deleteByPattern("groupChatHistory::history:" + groupMessage.getChatRoomId() + ":*");
+
         List<Integer> groupMembers = messageHandlerService.getGroupMembers(groupMessage.getChatRoomId());
 
         for (Integer memberId : groupMembers) {

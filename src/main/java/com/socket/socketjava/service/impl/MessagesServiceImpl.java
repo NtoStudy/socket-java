@@ -8,8 +8,9 @@ import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.mapper.MessagesMapper;
 import com.socket.socketjava.service.IMessagesService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.socket.socketjava.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,27 +29,16 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
 
     @Autowired
     private MessagesMapper messagesMapper;
-    @Autowired
-    private RedisUtils redisUtils;
 
-    private static final String CHAT_HISTORY_KEY = "chat:history:%d:%d:%d:%d"; // userId:receiverId:pageNum:pageSize
-    private static final long CHAT_HISTORY_TTL = 600; // 缓存10分钟
 
+ 
+
+    @Cacheable(value = "privateChatHistory",key = "'private:'+#userId+':' + #receiverId+':' + #pageNum+ ':'+#pageSize")
     @Override
     public MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
 
-        // 构造缓存key
-        String cacheKey = String.format(CHAT_HISTORY_KEY, userId, receiverId, pageNum, pageSize);
 
-        // 尝试从缓存获取
-        MessageListDTO<Messages> cachedResult = (MessageListDTO<Messages>) redisUtils.get(cacheKey);
-        if (cachedResult != null) {
-            return cachedResult;
-        }
-
-        // 缓存未命中，从数据库查询
-        PageHelper.startPage(pageNum, pageSize);
         List<Messages> messagesList = messagesMapper.getHistoryList(userId, receiverId);
 
         // 将未读消息设置为已读
@@ -78,11 +68,11 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
         messagesMessageListDTO.setPages(pageInfo.getPages());
 
 
-        redisUtils.set(cacheKey, messagesMessageListDTO, CHAT_HISTORY_TTL);
-
         return messagesMessageListDTO;
     }
 
+
+    @CacheEvict(value = "privateChatHistory", allEntries = true)
     @Override
     public void removeByMessageId(Integer messageId, Integer userId) {
         // 进行判断这条消息是谁发送的，需要拿到当前的一整个messages消息

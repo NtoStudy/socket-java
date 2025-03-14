@@ -10,6 +10,7 @@ import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.service.IFriendsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -61,6 +62,7 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         friends.setStatus(status);
         this.updateById(friends);
     }
+
 
     @Override
     public List<FriendVo> friendList(Integer userId) {
