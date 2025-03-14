@@ -1,10 +1,13 @@
 package com.socket.socketjava.controller;
 
 import com.socket.socketjava.result.Result;
+import com.socket.socketjava.service.impl.FileUploadService;
 import com.socket.socketjava.utils.AliyunOssOperator;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.File;
@@ -23,7 +26,8 @@ public class uploadController {
 
     @Autowired
     private AliyunOssOperator aliyunOssOperator;
-
+    @Autowired
+    private FileUploadService fileUploadService;
 
     @PostMapping("/upload")
     public Result uploadFile(@RequestParam("file") MultipartFile file) {
@@ -54,14 +58,28 @@ public class uploadController {
             return Result.fail();
         }
     }
-
-
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
         // 创建一个临时文件
         File tempFile = new File(System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID() + "-" + file.getOriginalFilename());
         // 将 MultipartFile 的内容写入临时文件
         file.transferTo(tempFile);
         return tempFile;
+    }
+
+    @PostMapping("/upload/chunk")
+    public ResponseEntity<String> uploadFileChunk(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("fileName") String fileName,
+            @RequestParam("chunkNumber") int chunkNumber,
+            @RequestParam("totalChunks") int totalChunks) {
+        try {
+            fileUploadService.handleFileChunk(file, fileName, chunkNumber, totalChunks);
+            return ResponseEntity.ok("Chunk uploaded successfully");
+        } catch (Exception e) {
+            log.error("Error while uploading chunk", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Upload failed");
+        }
     }
 
 

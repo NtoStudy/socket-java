@@ -27,16 +27,6 @@ public class GroupMessagesController {
     @Autowired
     private IGroupMessagesService groupMessagesService;
 
-    @PostMapping("/send")
-    @Operation(summary = "发送群聊消息")
-    public Result send(Integer chatRoomId, String content) {
-        GroupMessages groupMessages = new GroupMessages();
-        groupMessages.setSenderId(UserHolder.getLoginHolder().getUserId());
-        groupMessages.setChatRoomId(chatRoomId);
-        groupMessages.setContent(content);
-        groupMessagesService.save(groupMessages);
-        return Result.ok("消息发送成功");
-    }
 
     @GetMapping("/history")
     @Operation(summary = "获取群聊聊天记录")

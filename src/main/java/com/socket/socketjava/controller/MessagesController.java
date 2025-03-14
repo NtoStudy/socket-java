@@ -27,17 +27,6 @@ public class MessagesController {
     @Autowired
     private IMessagesService iMessagesService;
 
-    @PostMapping("/send")
-    @Operation(summary = "发送私聊消息")
-    public Result send(@RequestBody Integer receiverId, String content) {
-        Integer userId = UserHolder.getLoginHolder().getUserId();
-        Messages messages = new Messages();
-        messages.setSenderId(userId);
-        messages.setReceiverId(receiverId);
-        messages.setContent(content);
-        iMessagesService.save(messages);
-        return Result.ok("消息发送成功");
-    }
 
     @GetMapping("/history")
     @Operation(summary = "获取聊天记录")
