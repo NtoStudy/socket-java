@@ -17,4 +17,6 @@ public interface UsersMapper extends BaseMapper<Users> {
     Users selectByNumber(String number);
 
     void updateStatus(UserStatus status, String number);
+
+    void like(Integer friendId, Integer userId);
 }

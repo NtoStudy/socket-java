@@ -23,4 +23,5 @@ public interface IUsersService extends IService<Users> {
 
     void changeStatus(UserStatus status, String number);
 
+    void like(Integer friendId, Integer userId);
 }

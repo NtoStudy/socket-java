@@ -3,11 +3,20 @@
 <mapper namespace="com.socket.socketjava.mapper.UsersMapper">
 
     <update id="updateStatus">
-        update users set status = #{status} where number = #{number}
+        update users
+        set status = #{status}
+        where number = #{number}
+    </update>
+    <update id="like">
+        update users
+        set like_count = like_count + 1
+        where user_id = #{friendId}
     </update>
 
 
     <select id="selectByNumber" resultType="com.socket.socketjava.domain.pojo.Users">
-        select * from users where number = #{number}
+        select *
+        from users
+        where number = #{number}
     </select>
 </mapper>

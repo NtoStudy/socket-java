@@ -1,6 +1,7 @@
 package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
@@ -11,6 +12,7 @@ import com.socket.socketjava.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.socket.socketjava.utils.utils.JwtUtil;
 import com.socket.socketjava.utils.exception.socketException;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +72,10 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         usersMapper.updateStatus(status,number);
     }
 
+    @Override
+    public void like(Integer friendId, Integer userId) {
+        usersMapper.like(friendId,userId);
+    }
 
 
     /**
