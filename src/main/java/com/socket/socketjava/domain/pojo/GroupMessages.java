@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-02-09
+ * @since 2025-03-21
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -41,9 +41,6 @@ public class GroupMessages implements Serializable {
     @ApiModelProperty(value = "消息内容")
     private String content;
 
-    @ApiModelProperty(value = "消息发送状态")
-    private String messageType;
-
     @ApiModelProperty(value = "发送时间")
     private LocalDateTime sentTime;
 
@@ -55,6 +52,15 @@ public class GroupMessages implements Serializable {
 
     @ApiModelProperty(value = "删除该消息的用户ID列表")
     private String deletedByUsers;
+
+    @ApiModelProperty(value = "消息类型")
+    private String messageType;
+
+    @ApiModelProperty(value = "被@的用户ID列表")
+    private String mentionedUserIds;
+
+    @ApiModelProperty(value = "回复的消息ID")
+    private Integer replyToMessageId;
 
 
 }

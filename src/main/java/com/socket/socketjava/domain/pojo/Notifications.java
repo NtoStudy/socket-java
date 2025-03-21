@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-02-06
+ * @since 2025-03-21
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -38,9 +38,6 @@ public class Notifications implements Serializable {
     @ApiModelProperty(value = "通知内容")
     private String content;
 
-    @ApiModelProperty(value = "创建者ID")
-    private Integer creatorId;
-
     @ApiModelProperty(value = "通知类型")
     private String type;
 
@@ -52,6 +49,15 @@ public class Notifications implements Serializable {
 
     @ApiModelProperty(value = "关联的记录ID")
     private Integer relatedId;
+
+    @ApiModelProperty(value = "关联的创建者ID（用于群聊邀请等）")
+    private Integer creatorId;
+
+    @ApiModelProperty(value = "是否为系统公告")
+    private Boolean isAnnouncement;
+
+    @ApiModelProperty(value = "公告过期时间")
+    private LocalDateTime expiresAt;
 
 
 }

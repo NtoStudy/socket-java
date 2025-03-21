@@ -2,11 +2,10 @@ package com.socket.socketjava.domain.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
-
-import com.socket.socketjava.domain.menu.UserStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,7 +18,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-02-06
+ * @since 2025-03-21
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -49,7 +48,32 @@ public class Users implements Serializable {
     @ApiModelProperty(value = "注册时间")
     private LocalDateTime createdAt;
 
-    private UserStatus status;
+    @ApiModelProperty(value = "用户状态")
+    private String status;
+
+    @ApiModelProperty(value = "用户自定义状态")
+    private String customStatus;
+
+    @ApiModelProperty(value = "生日")
+    private LocalDate birthday;
+
+    @ApiModelProperty(value = "兴趣爱好")
+    private String hobbies;
+
+    @ApiModelProperty(value = "个性签名")
+    private String signature;
+
+    @ApiModelProperty(value = "性别")
+    private String gender;
+
+    @ApiModelProperty(value = "省")
+    private String province;
+
+    @ApiModelProperty(value = "市")
+    private String city;
+
+    @ApiModelProperty(value = "被点赞的个数")
+    private Integer likeCount;
 
 
 }

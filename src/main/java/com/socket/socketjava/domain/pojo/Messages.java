@@ -3,8 +3,10 @@ package com.socket.socketjava.domain.pojo;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,7 +25,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("messages")
-@ApiModel(value="Messages对象", description="聊天消息表")
+@ApiModel(value = "Messages对象", description = "聊天消息表")
 public class Messages implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -38,7 +40,7 @@ public class Messages implements Serializable {
     @ApiModelProperty(value = "接收者ID")
     private Integer receiverId;
 
-    @ApiModelProperty(value="群聊Id")
+    @ApiModelProperty(value = "群聊Id")
     private Integer chatRoomId;
 
     @ApiModelProperty(value = "消息发送状态")
@@ -62,4 +64,17 @@ public class Messages implements Serializable {
     @ApiModelProperty(value = "接收者是否删除该消息")
     private Integer deletedByReceiver;
 
+    @ApiModelProperty(value = "是否撤回")
+    private Boolean isRecalled;
+
+    @ApiModelProperty(value = "撤回时间")
+    private LocalDateTime recalledAt;
+
+    @ApiModelProperty(value = "回复的消息ID")
+    private Integer replyToMessageId;
+
 }
+
+
+
+

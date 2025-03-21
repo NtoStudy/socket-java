@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.springframework.stereotype.Component;
 
 /**
  * <p>
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
  * </p>
  *
  * @author 哞哞
- * @since 2025-02-06
+ * @since 2025-03-21
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -36,17 +35,23 @@ public class ChatRooms implements Serializable {
     @ApiModelProperty(value = "聊天室名称")
     private String roomName;
 
-    @ApiModelProperty(value = "群号")
-    private String groupNumber;
-
-    @ApiModelProperty(value = "聊天室头像")
-    private String avatarUrl;
-
     @ApiModelProperty(value = "创建者ID")
     private Integer creatorId;
 
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createdAt;
+
+    @ApiModelProperty(value = "聊天室头像")
+    private String avatarUrl;
+
+    @ApiModelProperty(value = "群组编号")
+    private String groupNumber;
+
+    @ApiModelProperty(value = "群公告")
+    private String announcement;
+
+    @ApiModelProperty(value = "置顶消息ID")
+    private Integer pinnedMessageId;
 
 
 }
