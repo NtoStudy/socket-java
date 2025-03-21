@@ -31,9 +31,7 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
     private MessagesMapper messagesMapper;
 
 
- 
-
-    @Cacheable(value = "privateChatHistory",key = "'private:'+#userId+':' + #receiverId+':' + #pageNum+ ':'+#pageSize")
+    @Cacheable(value = "privateChatHistory", key = "'private:'+#userId+':' + #receiverId+':' + #pageNum+ ':'+#pageSize")
     @Override
     public MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);

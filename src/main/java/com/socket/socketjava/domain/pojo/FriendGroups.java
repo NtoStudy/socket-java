@@ -40,5 +40,8 @@ public class FriendGroups implements Serializable {
     @ApiModelProperty(value = "自定义排序序号")
     private Integer sortOrder;
 
+    @ApiModelProperty(value = "分组中的人数")
+    private Integer memberCount;
+
 
 }
