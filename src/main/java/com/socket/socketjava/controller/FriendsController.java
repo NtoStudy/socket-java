@@ -4,7 +4,6 @@ package com.socket.socketjava.controller;
 import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IFriendsService;
-import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +38,7 @@ public class FriendsController {
         return Result.ok("消息已发出");
     }
 
+    //TODO 在这里处理好友请求，变成双向好友请求
     @PutMapping("/accept")
     @Operation(summary = "处理好友请求")
     public Result acceptOrRejectFriend(Integer relationId,Integer status) {

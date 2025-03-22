@@ -1,12 +1,12 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.pojo.FriendGroups;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IFriendGroupsService;
 import com.socket.socketjava.service.IFriendsService;
-import com.socket.socketjava.service.impl.FriendGroupsServiceImpl;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,10 +46,10 @@ public class FriendGroupsController {
     @Operation(summary = "修改分组名称")
     @PostMapping("/update")
     public Result update(Integer groupId, String groupName) {
-        FriendGroups friendGroups = new FriendGroups();
-        friendGroups.setGroupId(groupId)
-                .setGroupName(groupName);
-        iFriendGroupsService.updateById(friendGroups);
+        LambdaUpdateWrapper<FriendGroups> friendGroupsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        friendGroupsLambdaUpdateWrapper.eq(FriendGroups::getGroupId, groupId)
+                .set(FriendGroups::getGroupName, groupName);
+        iFriendGroupsService.update(friendGroupsLambdaUpdateWrapper);
         return Result.ok();
     }
 

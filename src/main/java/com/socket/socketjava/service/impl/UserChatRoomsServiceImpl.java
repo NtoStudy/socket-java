@@ -56,6 +56,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
         String username = usersMapper.selectById(userId).getUsername();
         // 先将用户自己插入到聊天室内
         UserChatRooms userChatRooms1 = new UserChatRooms();
+        userChatRooms1.setRole("群主");
         userChatRooms1.setUserId(userId);
         userChatRooms1.setRoomId(roomId);
         userChatRooms1.setStatus(1);

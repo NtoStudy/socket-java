@@ -7,6 +7,7 @@ import com.socket.socketjava.domain.pojo.ChatRooms;
 import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
+import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IChatRoomsService;
 import com.socket.socketjava.service.IUserChatRoomsService;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +36,7 @@ public class UserChatRoomsController {
     @Autowired
     private IUserChatRoomsService userChatRoomsService;
     @Autowired
-    private IChatRoomsService ChatRoomsService;
+    private IChatRoomsService chatRoomsService;
 
     @PostMapping("/create")
     @Operation(summary = "新建群聊")
@@ -50,7 +52,7 @@ public class UserChatRoomsController {
         GroupIsContainerUser groupIsContainerUser = new GroupIsContainerUser();
         LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber, groupNumber);
-        ChatRooms chatRoom = ChatRoomsService.getOne(chatRoomsLambdaQueryWrapper);
+        ChatRooms chatRoom = chatRoomsService.getOne(chatRoomsLambdaQueryWrapper);
         groupIsContainerUser.setGroupNumber(chatRoom.getGroupNumber());
         groupIsContainerUser.setRoomId(chatRoom.getRoomId());
         groupIsContainerUser.setRoomName(chatRoom.getRoomName());
@@ -112,5 +114,75 @@ public class UserChatRoomsController {
         return Result.ok(count);
     }
 
+    //TODO 置顶群聊，创建群聊管理群聊，加入群的数量
+    @Operation(summary = "获取置顶群聊信息")
+    @GetMapping("/pinnedGroup")
+    public Result pinnedGroup() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        GroupCountVo groupCountVo = new GroupCountVo();
+
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getIsPinned, 1);
+        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Operation(summary = "获取创建群聊信息")
+    @GetMapping("/createGroup")
+    public Result createGroup() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        GroupCountVo groupCountVo = new GroupCountVo();
+
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "群主");
+        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Operation(summary = "获取管理群聊信息")
+    @GetMapping("/manageGroup")
+    public Result manageGroup() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        GroupCountVo groupCountVo = new GroupCountVo();
+
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "管理员");
+        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Operation(summary = "加入群聊信息")
+    @GetMapping("/joinGroup")
+    public Result joinGroup() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        GroupCountVo groupCountVo = new GroupCountVo();
+
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "普通成员");
+        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+    }
+
+    private Result getResult(GroupCountVo groupCountVo, LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper) {
+        List<UserChatRooms> userChatRoomsList = userChatRoomsService.list(userChatRoomsLambdaQueryWrapper);
+
+        int size = userChatRoomsList.size();
+        groupCountVo.setGroupCount(size);
+
+        List<ChatRooms> chatRoomsList = new ArrayList<>();
+        for (UserChatRooms userChatRoom : userChatRoomsList) {
+            Integer roomId = userChatRoom.getRoomId();
+            ChatRooms chatRoom = chatRoomsService.getById(roomId);
+            if (chatRoom != null) {
+                chatRoomsList.add(chatRoom);
+            }
+        }
+        groupCountVo.setChatRoomsList(chatRoomsList);
+        return Result.ok(groupCountVo);
+    }
 
 }
