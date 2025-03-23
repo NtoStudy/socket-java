@@ -1,6 +1,7 @@
 package com.socket.socketjava.controller;
 
 
+import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IFriendsService;
@@ -38,20 +39,19 @@ public class FriendsController {
         return Result.ok("消息已发出");
     }
 
-    //TODO 在这里处理好友请求，变成双向好友请求
     @PutMapping("/accept")
     @Operation(summary = "处理好友请求")
-    public Result acceptOrRejectFriend(Integer relationId,Integer status) {
+    public Result acceptOrRejectFriend(Integer relationId, Integer status) {
         // 根据用户的number查询到用户的id，将用户的Id写入notifications表中
-        ifriendsService.acceptOrRejectFriend(relationId,status);
-        if(status == 1) return Result.ok("已接受");
-        else if(status == 2) return Result.ok("已拒绝");
+        ifriendsService.acceptOrRejectFriend(relationId, status);
+        if (status == 1) return Result.ok("已接受");
+        else if (status == 2) return Result.ok("已拒绝");
         return Result.ok("服务异常");
     }
 
     @GetMapping("/friendlist")
     @Operation(summary = "查询好友列表")
-    public Result<List<FriendVo>> friendList(){
+    public Result<List<FriendVo>> friendList() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<FriendVo> friendList = ifriendsService.friendList(userId);
         return Result.ok(friendList);
@@ -59,11 +59,25 @@ public class FriendsController {
 
     @GetMapping("/messageCount")
     @Operation(summary = "查询好友消息数量")
-    public Result messageCount(Integer relationId){
+    public Result messageCount(Integer relationId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        Integer count =  ifriendsService.getMessageCount(userId,relationId);
+        Integer count = ifriendsService.getMessageCount(userId, relationId);
         return Result.ok(count);
     }
 
+    @Operation(summary = "给好友设置备注")
+    @PostMapping("/remark")
+    public Result remark(@RequestParam Integer friendId, @RequestParam String remark) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        ifriendsService.update()
+                .eq("user_id", userId)
+                .eq("friend_id", friendId)
+                .set("remark", remark)
+                .update();
+
+        Friends friends = new Friends();
+        friends.setRemark(remark);
+        return Result.ok("修改成功");
+    }
 
 }

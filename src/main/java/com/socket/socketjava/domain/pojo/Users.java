@@ -80,5 +80,4 @@ public class Users implements Serializable {
     @ApiModelProperty(value = "被点赞的个数")
     private Integer likeCount;
 
-
 }

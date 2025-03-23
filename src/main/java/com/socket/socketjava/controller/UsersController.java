@@ -2,7 +2,9 @@ package com.socket.socketjava.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.socket.socketjava.domain.dto.FriendContainerRemark;
 import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
@@ -53,7 +55,6 @@ public class UsersController {
     }
 
 
-
     @Operation(summary = "获取用户信息")
     @GetMapping("/info")
     public Result<Users> getUserInfo() {
@@ -97,9 +98,22 @@ public class UsersController {
 
     @Operation(summary = "根据Id查询用户信息")
     @GetMapping("/infoById")
-    public Result<Users> getUserInfoById(@RequestParam Integer userId) {
+    public Result<FriendContainerRemark> getUserInfoById(@RequestParam Integer userId) {
+        Integer userId1 = UserHolder.getLoginHolder().getUserId();
+
         Users users = usersService.getById(userId);
-        return Result.ok(users);
+
+        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        friendsLambdaQueryWrapper.eq(Friends::getFriendId, userId)
+                .eq(Friends::getUserId, userId1);
+        String remark = iFriendsService.getOne(friendsLambdaQueryWrapper).getRemark();
+
+
+        FriendContainerRemark friendContainerRemark = new FriendContainerRemark();
+        friendContainerRemark.setRemark(remark);
+        friendContainerRemark.setUsers(users);
+
+        return Result.ok(friendContainerRemark);
     }
 
 
