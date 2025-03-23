@@ -51,10 +51,10 @@ public class Friends implements Serializable {
     private String remark;
 
     @ApiModelProperty(value = "是否置顶好友")
-    private Boolean isPinned;
+    private Integer isPinned;
 
     @ApiModelProperty(value = "是否拉黑")
-    private Boolean isBlocked;
+    private Integer isBlocked;
 
 
 }

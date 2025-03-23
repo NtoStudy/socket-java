@@ -1,6 +1,7 @@
 package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.socket.socketjava.domain.pojo.Users;
@@ -11,7 +12,6 @@ import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.service.IFriendsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -108,6 +108,25 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
     @Override
     public Integer userIsFriend(Integer userId, Integer friendId) {
         return friendsMapper.userIsFriend(userId, friendId);
+    }
+
+    @Override
+    public boolean togglePinFriend(Integer userId, Integer friendId, Integer status) {
+        // 查询当前好友关系
+        LambdaUpdateWrapper<Friends> friendsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+
+        friendsLambdaUpdateWrapper.eq(Friends::getFriendId, friendId)
+                .eq(Friends::getUserId, userId)
+                .set(Friends::getIsPinned, status);
+        update(friendsLambdaUpdateWrapper);
+
+        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        friendsLambdaQueryWrapper
+                .eq(Friends::getFriendId, friendId)
+                .eq(Friends::getUserId, userId);
+        Friends one = getOne(friendsLambdaQueryWrapper);
+
+        return one.getIsPinned() == 1;
     }
 
 

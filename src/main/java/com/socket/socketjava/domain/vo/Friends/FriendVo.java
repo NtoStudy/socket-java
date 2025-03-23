@@ -9,6 +9,8 @@ public class FriendVo {
 
     private Integer friendId;
 
+    private Integer isPinned;
+
     private Integer relationStatus;
 
     private String username;

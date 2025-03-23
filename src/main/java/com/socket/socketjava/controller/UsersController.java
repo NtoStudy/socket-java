@@ -2,7 +2,7 @@ package com.socket.socketjava.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.socket.socketjava.domain.dto.FriendContainerRemark;
+import com.socket.socketjava.domain.dto.FriendPlus;
 import com.socket.socketjava.domain.dto.FriendIsContainerUser;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
@@ -98,7 +98,7 @@ public class UsersController {
 
     @Operation(summary = "根据Id查询用户信息")
     @GetMapping("/infoById")
-    public Result<FriendContainerRemark> getUserInfoById(@RequestParam Integer userId) {
+    public Result<FriendPlus> getUserInfoById(@RequestParam Integer userId) {
         Integer userId1 = UserHolder.getLoginHolder().getUserId();
 
         Users users = usersService.getById(userId);
@@ -107,11 +107,12 @@ public class UsersController {
         friendsLambdaQueryWrapper.eq(Friends::getFriendId, userId)
                 .eq(Friends::getUserId, userId1);
         String remark = iFriendsService.getOne(friendsLambdaQueryWrapper).getRemark();
+        Integer isPinned = iFriendsService.getOne(friendsLambdaQueryWrapper).getIsPinned();
 
-
-        FriendContainerRemark friendContainerRemark = new FriendContainerRemark();
+        FriendPlus friendContainerRemark = new FriendPlus();
         friendContainerRemark.setRemark(remark);
         friendContainerRemark.setUsers(users);
+        friendContainerRemark.setIsPinned(isPinned);
 
         return Result.ok(friendContainerRemark);
     }

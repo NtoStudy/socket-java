@@ -25,6 +25,7 @@
         SELECT f.relation_id       relationId,
                f.friend_id         friendId,
                f.status         AS relationStatus,
+               f.is_pinned      AS isPinned,
                u.username,
                u.number,
                u.avatar_url     AS avatarUrl,
@@ -38,8 +39,8 @@
                 OR (f.user_id = m.receiver_id AND f.friend_id = m.sender_id AND m.deleted_by_receiver = 0))
         WHERE f.user_id = #{userId}
           AND f.status = 1
-        GROUP BY f.relation_id, f.user_id, f.friend_id, f.status, u.username, u.number, u.avatar_url, u.status
-        ORDER BY lastMessageTime DESC;
+        GROUP BY f.relation_id, f.user_id, f.friend_id, f.status, f.is_pinned, u.username, u.number, u.avatar_url, u.status
+        ORDER BY f.is_pinned DESC, lastMessageTime DESC;
     </select>
     <select id="getMessageCount" resultType="java.lang.Integer">
         select COUNT(*)

@@ -1,6 +1,7 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.result.Result;
@@ -79,5 +80,15 @@ public class FriendsController {
         friends.setRemark(remark);
         return Result.ok("修改成功");
     }
+
+
+    @PutMapping("/togglePin")
+    @Operation(summary = "切换好友置顶状态")
+    public Result togglePinFriend(@RequestParam Integer friendId, Integer status) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        boolean isPinned = ifriendsService.togglePinFriend(userId, friendId,status);
+        return Result.ok(isPinned ? "已置顶" : "已取消置顶");
+    }
+
 
 }

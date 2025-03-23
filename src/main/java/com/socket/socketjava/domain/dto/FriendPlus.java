@@ -4,7 +4,8 @@ import com.socket.socketjava.domain.pojo.Users;
 import lombok.Data;
 
 @Data
-public class FriendContainerRemark {
+public class FriendPlus {
     private String remark;
+    private Integer isPinned;
     private Users users;
 }

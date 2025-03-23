@@ -26,4 +26,6 @@ public interface IFriendsService extends IService<Friends> {
     Integer getMessageCount(Integer userId, Integer relationId);
 
     Integer userIsFriend(Integer userId, Integer friendId);
+
+    boolean togglePinFriend(Integer userId, Integer friendId, Integer status);
 }
