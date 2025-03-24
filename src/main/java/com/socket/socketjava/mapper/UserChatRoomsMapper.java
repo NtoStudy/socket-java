@@ -3,7 +3,6 @@ package com.socket.socketjava.mapper;
 import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
-import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 
 import java.util.List;
 

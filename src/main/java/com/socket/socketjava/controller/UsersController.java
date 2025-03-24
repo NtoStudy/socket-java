@@ -1,15 +1,12 @@
 package com.socket.socketjava.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.dto.FriendPlus;
 import com.socket.socketjava.domain.dto.FriendIsContainerUser;
-import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
-import com.socket.socketjava.service.IFriendsService;
 import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
 
 /**
  * <p>
@@ -30,16 +26,15 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("/users")
-@Tag(name = "用户相关接口")
+@Tag(name = "用户账号管理")
 @Slf4j
 public class UsersController {
 
     @Autowired
     private IUsersService usersService;
     @Autowired
-    private IFriendsService iFriendsService;
 
-    @Operation(summary = "用户登录")
+    @Operation(summary = "用户账号登录验证")
     @PostMapping("/login")
     public Result<String> login(@RequestBody LoginVo loginVo) {
         log.info("用户登录");
@@ -47,7 +42,7 @@ public class UsersController {
         return Result.ok(jwt);
     }
 
-    @Operation(summary = "用户注册")
+    @Operation(summary = "新用户账号注册")
     @PostMapping("/register")
     public Result register(@RequestBody RegisterVo registerVo) {
         String number = usersService.register(registerVo);
@@ -55,80 +50,38 @@ public class UsersController {
     }
 
 
-    @Operation(summary = "获取用户信息")
+    @Operation(summary = "获取当前登录用户信息")
     @GetMapping("/info")
     public Result<Users> getUserInfo() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         return Result.ok(usersService.getById(userId));
     }
 
-    @Operation(summary = "根据number获取用户信息")
+    @Operation(summary = "根据用户ID查询用户详细信息")
+    @GetMapping("/infoById")
+    public Result<FriendPlus> getUserInfoById(@RequestParam Integer userId) {
+        Integer currentUserId = UserHolder.getLoginHolder().getUserId();
+        FriendPlus friendPlus = usersService.getUserInfoWithFriendRelation(userId, currentUserId);
+        return Result.ok(friendPlus);
+    }
+
+    @Operation(summary = "根据用户账号查询用户信息")
     @GetMapping("/infoByNumber")
     public Result<FriendIsContainerUser> getStatus(@RequestParam String number) {
-        FriendIsContainerUser friendIsContainerUser = new FriendIsContainerUser();
-        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        usersLambdaQueryWrapper.eq(Users::getNumber, number);
-        Users users = usersService.getOne(usersLambdaQueryWrapper);
-        friendIsContainerUser.setUserName(users.getUsername());
-        friendIsContainerUser.setAvatarUrl(users.getAvatarUrl());
-        friendIsContainerUser.setNumber(users.getNumber());
-        friendIsContainerUser.setUserId(users.getUserId());
-        // 要判断这个人是不是自己，还要判断这个人是不是好友
-        // 是不是自己
-        Integer userId = users.getUserId();
-        Integer userId1 = UserHolder.getLoginHolder().getUserId();
-        log.info("userId:" + userId + "userId1:" + userId1);
-        if (Objects.equals(userId, userId1)) {
-            friendIsContainerUser.setIsUser(1);
-        } else {
-            friendIsContainerUser.setIsUser(0);
-        }
-
-        // userId是我自己的Id,另一个是friendId
-        Integer userIsFriend = iFriendsService.userIsFriend(userId1, friendIsContainerUser.getUserId());
-        log.info("userIsFriend:" + userIsFriend);
-        if (userIsFriend == 1) {
-            friendIsContainerUser.setIsContainer(1);
-        } else {
-            friendIsContainerUser.setIsContainer(0);
-        }
-        // 满足以上则代表，既不是好友，也不是自己
+        Integer currentUserId = UserHolder.getLoginHolder().getUserId();
+        FriendIsContainerUser friendIsContainerUser = usersService.getUserInfoByNumber(number, currentUserId);
         return Result.ok(friendIsContainerUser);
     }
 
-    @Operation(summary = "根据Id查询用户信息")
-    @GetMapping("/infoById")
-    public Result<FriendPlus> getUserInfoById(@RequestParam Integer userId) {
-        Integer userId1 = UserHolder.getLoginHolder().getUserId();
-
-        Users users = usersService.getById(userId);
-
-        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        friendsLambdaQueryWrapper.eq(Friends::getFriendId, userId)
-                .eq(Friends::getUserId, userId1);
-        String remark = iFriendsService.getOne(friendsLambdaQueryWrapper).getRemark();
-        Integer isPinned = iFriendsService.getOne(friendsLambdaQueryWrapper).getIsPinned();
-
-        FriendPlus friendContainerRemark = new FriendPlus();
-        friendContainerRemark.setRemark(remark);
-        friendContainerRemark.setUsers(users);
-        friendContainerRemark.setIsPinned(isPinned);
-
-        return Result.ok(friendContainerRemark);
-    }
-
-
-    @Operation(summary = "修改用户信息")
+    @Operation(summary = "更新当前用户的个人信息")
     @PostMapping("/update")
     public Result changeStatus(@RequestBody Users users) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        usersLambdaQueryWrapper.eq(Users::getUserId, userId);
-        usersService.update(users, usersLambdaQueryWrapper);
+        usersService.updateUserInfo(users, userId);
         return Result.ok();
     }
 
-    @Operation(summary = "给别人点赞")
+    @Operation(summary = "给指定用户点赞") 
     @PutMapping("/like")
     public Result like(@RequestParam Integer friendId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();

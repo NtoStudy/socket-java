@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/group-messages")
-@Tag(name = "群聊聊天消息相关接口")
+@Tag(name = "群聊消息管理")
 public class GroupMessagesController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class GroupMessagesController {
 
 
     @GetMapping("/history")
-    @Operation(summary = "获取群聊聊天记录")
+    @Operation(summary = "分页获取群聊历史消息")
     public Result<MessageListDTO<GroupMessages>> history(@RequestParam Integer chatRoomId,
                                                          @RequestParam Integer pageNum,
                                                          @RequestParam Integer pageSize) {
@@ -39,7 +39,7 @@ public class GroupMessagesController {
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除群聊聊天记录")
+    @Operation(summary = "删除指定的群聊消息")
     public Result delete(@RequestParam Integer chatRoomId,@RequestParam Integer messageId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         groupMessagesService.removeBySenderId(chatRoomId, messageId, userId);

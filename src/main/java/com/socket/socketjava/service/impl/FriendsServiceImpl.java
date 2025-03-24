@@ -129,5 +129,23 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         return one.getIsPinned() == 1;
     }
 
+    @Override
+    public boolean setFriendRemark(Integer userId, Integer friendId, String remark) {
+        return update()
+                .eq("user_id", userId)
+                .eq("friend_id", friendId)
+                .set("remark", remark)
+                .update();
+    }
+
+    @Override
+    public String handleFriendRequest(Integer relationId, Integer status) {
+        acceptOrRejectFriend(relationId, status);
+
+        if (status == 1) return "已接受";
+        else if (status == 2) return "已拒绝";
+        return "服务异常";
+    }
+
 
 }

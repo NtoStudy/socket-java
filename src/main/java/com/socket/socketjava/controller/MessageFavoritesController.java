@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * <p>
  * 消息收藏表 前端控制器
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/message-favorites")
+@Tag(name = "消息收藏管理")
 public class MessageFavoritesController {
 
 }

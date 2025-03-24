@@ -3,7 +3,6 @@ package com.socket.socketjava.mapper;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-import java.util.List;
 
 /**
  * <p>

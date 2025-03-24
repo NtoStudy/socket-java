@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/messages")
-@Tag(name = "私聊聊天消息相关接口")
+@Tag(name = "私聊消息管理") 
 public class MessagesController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class MessagesController {
 
 
     @GetMapping("/history")
-    @Operation(summary = "获取聊天记录")
+    @Operation(summary = "分页获取与指定用户的聊天记录") 
     public Result<MessageListDTO<Messages>> history(@RequestParam(value = "receiverId") Integer receiverId,
                                                     @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                     @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
@@ -39,7 +39,7 @@ public class MessagesController {
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除聊天记录")
+    @Operation(summary = "删除指定的私聊消息") 
     public Result delete(Integer messageId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         iMessagesService.removeByMessageId(messageId, userId);

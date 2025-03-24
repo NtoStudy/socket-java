@@ -1,8 +1,7 @@
 package com.socket.socketjava.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.socket.socketjava.domain.pojo.Notifications;
+
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.result.Result;
@@ -29,14 +28,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/notifications")
-@Tag(name = "系统通知相关接口")
+@Tag(name = "系统通知管理")
 public class NotificationsController {
 
     @Autowired
     private INotificationsService iNotificationsService;
 
     @GetMapping("/friend")
-    @Operation(summary = "未处理的好友请求")
+    @Operation(summary = "获取所有未处理的好友请求")
     public Result<List<AcceptFriendVo>> noAcceptFriend() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<AcceptFriendVo> acceptFriendVoList = iNotificationsService.selectFriend(userId);
@@ -44,21 +43,17 @@ public class NotificationsController {
     }
 
     @PostMapping("/friend")
-    @Operation(summary = "推送好友请求数量")
+    @Operation(summary = "获取未处理好友请求的数量")
     public Result pushFriend() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        notificationsLambdaQueryWrapper
-                .eq(Notifications::getReceiverId, userId)
-                .eq(Notifications::getStatus, 0)
-                .eq(Notifications::getType, "friend");
-        long count = iNotificationsService.count(notificationsLambdaQueryWrapper);
+        long count = iNotificationsService.countUnhandledFriendRequests(userId);
         return Result.ok(count);
     }
 
 
+
     @GetMapping("/chatroom")
-    @Operation(summary = "未处理的群聊消息")
+    @Operation(summary = "获取所有未处理的群聊邀请")
     public Result<List<AcceptRoomsVo>> noAcceptRooms() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<AcceptRoomsVo> acceptRoomsVoList = iNotificationsService.selectRooms(userId);
@@ -66,15 +61,10 @@ public class NotificationsController {
     }
 
     @PostMapping("/chatroom")
-    @Operation(summary = "推送群聊邀请数量")
+    @Operation(summary = "获取未处理群聊邀请的数量")
     public Result pushRooms() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        notificationsLambdaQueryWrapper
-                .eq(Notifications::getReceiverId, userId)
-                .eq(Notifications::getStatus, 0)
-                .eq(Notifications::getType, "chatroom");
-        long count = iNotificationsService.count(notificationsLambdaQueryWrapper);
+        long count = iNotificationsService.countUnhandledRoomInvitations(userId);
         return Result.ok(count);
     }
 

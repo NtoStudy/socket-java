@@ -1,5 +1,6 @@
 package com.socket.socketjava.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
@@ -66,5 +67,25 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
         }
 
         return acceptRoomsVos;
+    }
+
+    @Override
+    public long countUnhandledFriendRequests(Integer userId) {
+        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        notificationsLambdaQueryWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getStatus, 0)
+                .eq(Notifications::getType, "friend");
+        return count(notificationsLambdaQueryWrapper);
+    }
+
+    @Override
+    public long countUnhandledRoomInvitations(Integer userId) {
+        LambdaQueryWrapper<Notifications> notificationsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        notificationsLambdaQueryWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getStatus, 0)
+                .eq(Notifications::getType, "chatroom");
+        return count(notificationsLambdaQueryWrapper);
     }
 }

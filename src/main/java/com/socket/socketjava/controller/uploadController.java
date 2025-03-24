@@ -3,6 +3,7 @@ package com.socket.socketjava.controller;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.impl.FileUploadService;
 import com.socket.socketjava.utils.AliyunOssOperator;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
-@Tag(name = "上传文件")
+@Tag(name = "文件上传服务")
 public class uploadController {
 
 
@@ -30,6 +31,7 @@ public class uploadController {
     private FileUploadService fileUploadService;
 
     @PostMapping("/upload")
+    @Operation(summary = "上传单个文件")
     public Result uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             // 将上传的文件转换为 File 对象
@@ -44,6 +46,7 @@ public class uploadController {
     }
 
     @PostMapping("/upload/batch")
+    @Operation(summary = "批量上传多个文件") 
     public Result uploadFiles(@RequestParam("files") MultipartFile[] files){
         try {
             List<String> urls = new ArrayList<>();
@@ -67,6 +70,7 @@ public class uploadController {
     }
 
     @PostMapping("/upload/chunk")
+    @Operation(summary = "分片上传大文件")
     public ResponseEntity<String> uploadFileChunk(
             @RequestParam("file") MultipartFile file,
             @RequestParam("fileName") String fileName,

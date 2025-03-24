@@ -1,5 +1,7 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.dto.FriendPlus;
 import com.socket.socketjava.domain.menu.UserStatus;
 import com.socket.socketjava.domain.pojo.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -24,4 +26,11 @@ public interface IUsersService extends IService<Users> {
     void changeStatus(UserStatus status, String number);
 
     void like(Integer friendId, Integer userId);
+
+
+    FriendIsContainerUser getUserInfoByNumber(String number, Integer currentUserId);
+
+    FriendPlus getUserInfoWithFriendRelation(Integer userId, Integer currentUserId);
+
+    boolean updateUserInfo(Users users, Integer userId);
 }

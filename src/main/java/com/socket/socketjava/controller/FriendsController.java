@@ -1,8 +1,5 @@
 package com.socket.socketjava.controller;
 
-
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.vo.Friends.FriendVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IFriendsService;
@@ -24,15 +21,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/friends")
-@Tag(name = "好友相关接口")
+@Tag(name = "好友关系管理")
 public class FriendsController {
 
     @Autowired
     private IFriendsService ifriendsService;
 
-
     @PostMapping("/add")
-    @Operation(summary = "添加好友")
+    @Operation(summary = "发送好友添加请求")
     public Result addFriend(@RequestParam String friendNumber) {
         String userNumber = UserHolder.getLoginHolder().getNumber();
         // 根据用户的number查询到用户的id，将用户的Id写入notifications表中
@@ -41,17 +37,14 @@ public class FriendsController {
     }
 
     @PutMapping("/accept")
-    @Operation(summary = "处理好友请求")
+    @Operation(summary = "接受或拒绝好友请求")
     public Result acceptOrRejectFriend(Integer relationId, Integer status) {
-        // 根据用户的number查询到用户的id，将用户的Id写入notifications表中
-        ifriendsService.acceptOrRejectFriend(relationId, status);
-        if (status == 1) return Result.ok("已接受");
-        else if (status == 2) return Result.ok("已拒绝");
-        return Result.ok("服务异常");
+        String message = ifriendsService.handleFriendRequest(relationId, status);
+        return Result.ok(message);
     }
 
     @GetMapping("/friendlist")
-    @Operation(summary = "查询好友列表")
+    @Operation(summary = "获取当前用户的好友列表")
     public Result<List<FriendVo>> friendList() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<FriendVo> friendList = ifriendsService.friendList(userId);
@@ -59,36 +52,27 @@ public class FriendsController {
     }
 
     @GetMapping("/messageCount")
-    @Operation(summary = "查询好友消息数量")
+    @Operation(summary = "获取与指定好友的未读消息数")
     public Result messageCount(Integer relationId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         Integer count = ifriendsService.getMessageCount(userId, relationId);
         return Result.ok(count);
     }
 
-    @Operation(summary = "给好友设置备注")
     @PostMapping("/remark")
+    @Operation(summary = "设置好友的备注名称")
     public Result remark(@RequestParam Integer friendId, @RequestParam String remark) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        ifriendsService.update()
-                .eq("user_id", userId)
-                .eq("friend_id", friendId)
-                .set("remark", remark)
-                .update();
-
-        Friends friends = new Friends();
-        friends.setRemark(remark);
+        ifriendsService.setFriendRemark(userId, friendId, remark);
         return Result.ok("修改成功");
     }
 
-
     @PutMapping("/togglePin")
-    @Operation(summary = "切换好友置顶状态")
+    @Operation(summary = "设置或取消好友置顶状态")
     public Result togglePinFriend(@RequestParam Integer friendId, Integer status) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        boolean isPinned = ifriendsService.togglePinFriend(userId, friendId,status);
+        boolean isPinned = ifriendsService.togglePinFriend(userId, friendId, status);
         return Result.ok(isPinned ? "已置顶" : "已取消置顶");
     }
-
 
 }

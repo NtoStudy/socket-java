@@ -2,12 +2,16 @@ package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.dto.FriendPlus;
 import com.socket.socketjava.domain.menu.UserStatus;
+import com.socket.socketjava.domain.pojo.Friends;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.mapper.UsersMapper;
 import com.socket.socketjava.result.ResultCodeEnum;
+import com.socket.socketjava.service.IFriendsService;
 import com.socket.socketjava.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.socket.socketjava.utils.utils.JwtUtil;
@@ -16,6 +20,7 @@ import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -31,21 +36,23 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Autowired
     private UsersMapper usersMapper;
+    @Autowired
+    private IFriendsService friendsService;
 
 
     @Override
     public String login(LoginVo loginVo) {
         Users users = usersMapper.selectByNumber(loginVo.getNumber());
         // 先判断用户名number是否存在
-        if(users == null){
+        if (users == null) {
             throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
         }
         // 再判断密码是否正确
-        if(!users.getPassword().equals(loginVo.getPassword())){
+        if (!users.getPassword().equals(loginVo.getPassword())) {
             throw new socketException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
         }
         // 将用户状态更改为在线
-        usersMapper.updateStatus(UserStatus.ONLINE,loginVo.getNumber());
+        usersMapper.updateStatus(UserStatus.ONLINE, loginVo.getNumber());
 
         // 如果所有对实现，则创建jwt令牌
         return JwtUtil.createToken(users.getUserId(), users.getNumber());
@@ -66,20 +73,81 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
 
-
     @Override
     public void changeStatus(UserStatus status, String number) {
-        usersMapper.updateStatus(status,number);
+        usersMapper.updateStatus(status, number);
     }
 
     @Override
     public void like(Integer friendId, Integer userId) {
-        usersMapper.like(friendId,userId);
+        usersMapper.like(friendId, userId);
+    }
+
+    @Override
+    public FriendIsContainerUser getUserInfoByNumber(String number, Integer currentUserId) {
+        FriendIsContainerUser friendIsContainerUser = new FriendIsContainerUser();
+
+        // 查询用户信息
+        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        usersLambdaQueryWrapper.eq(Users::getNumber, number);
+        Users users = getOne(usersLambdaQueryWrapper);
+
+        // 设置基本信息
+        friendIsContainerUser.setUserName(users.getUsername());
+        friendIsContainerUser.setAvatarUrl(users.getAvatarUrl());
+        friendIsContainerUser.setNumber(users.getNumber());
+        friendIsContainerUser.setUserId(users.getUserId());
+
+        // 判断是否是自己
+        Integer userId = users.getUserId();
+        if (Objects.equals(userId, currentUserId)) {
+            friendIsContainerUser.setIsUser(1);
+        } else {
+            friendIsContainerUser.setIsUser(0);
+        }
+
+        // 判断是否是好友
+        Integer userIsFriend = friendsService.userIsFriend(currentUserId, userId);
+        if (userIsFriend == 1) {
+            friendIsContainerUser.setIsContainer(1);
+        } else {
+            friendIsContainerUser.setIsContainer(0);
+        }
+
+        return friendIsContainerUser;
+    }
+
+    @Override
+    public FriendPlus getUserInfoWithFriendRelation(Integer userId, Integer currentUserId) {
+        // 获取用户信息
+        Users users = getById(userId);
+
+        // 获取好友关系信息
+        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        friendsLambdaQueryWrapper.eq(Friends::getFriendId, userId)
+                .eq(Friends::getUserId, currentUserId);
+        Friends friend = friendsService.getOne(friendsLambdaQueryWrapper);
+
+        // 组装返回数据
+        FriendPlus friendPlus = new FriendPlus();
+        friendPlus.setRemark(friend.getRemark());
+        friendPlus.setUsers(users);
+        friendPlus.setIsPinned(friend.getIsPinned());
+
+        return friendPlus;
+    }
+
+    @Override
+    public boolean updateUserInfo(Users users, Integer userId) {
+        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        usersLambdaQueryWrapper.eq(Users::getUserId, userId);
+        return update(users, usersLambdaQueryWrapper);
     }
 
 
     /**
      * 随机生成首位不为0的十位数字
+     *
      * @return
      */
 
@@ -101,6 +169,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     /**
      * 判断生成的十位数字数据库中是否存在
+     *
      * @param number
      * @return
      */
@@ -112,6 +181,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     /**
      * 生成唯一十位数字
+     *
      * @return
      */
     public String generateUniqueNumber() {

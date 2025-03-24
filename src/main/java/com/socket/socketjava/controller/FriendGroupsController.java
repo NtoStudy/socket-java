@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/friend-groups")
-@Tag(name = "好有分组相关接口")
+@Tag(name = "好友分组管理")
 
 public class FriendGroupsController {
 
@@ -32,7 +32,7 @@ public class FriendGroupsController {
     @Autowired
     private IFriendsService iFriendsService;
 
-    @Operation(summary = "创建好友分组")
+    @Operation(summary = "创建新的好友分组")
     @PostMapping("/create")
     public Result create(String groupName) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
@@ -43,7 +43,7 @@ public class FriendGroupsController {
         return Result.ok();
     }
 
-    @Operation(summary = "修改分组名称")
+    @Operation(summary = "修改已有分组的名称") 
     @PostMapping("/update")
     public Result update(Integer groupId, String groupName) {
         LambdaUpdateWrapper<FriendGroups> friendGroupsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -53,14 +53,14 @@ public class FriendGroupsController {
         return Result.ok();
     }
 
-    @Operation(summary = "删除分组")
+    @Operation(summary = "删除指定的好友分组") 
     @DeleteMapping("/delete")
     public Result delete(Integer groupId) {
         iFriendGroupsService.removeById(groupId);
         return Result.ok();
     }
 
-    @Operation(summary = "获取分组列表")
+    @Operation(summary = "获取当前用户的所有分组")
     @GetMapping("/list")
     public Result list() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
@@ -70,7 +70,7 @@ public class FriendGroupsController {
                 .list());
     }
 
-    @Operation(summary = "查询分组内所有好友")
+    @Operation(summary = "查询指定分组内的所有好友") 
     @GetMapping("/friendList")
     public Result friendList(Integer groupId) {
         return Result.ok(iFriendsService.lambdaQuery()

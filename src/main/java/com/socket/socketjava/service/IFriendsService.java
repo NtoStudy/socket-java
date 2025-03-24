@@ -28,4 +28,8 @@ public interface IFriendsService extends IService<Friends> {
     Integer userIsFriend(Integer userId, Integer friendId);
 
     boolean togglePinFriend(Integer userId, Integer friendId, Integer status);
+
+    boolean setFriendRemark(Integer userId, Integer friendId, String remark);
+
+    String handleFriendRequest(Integer relationId, Integer status);
 }

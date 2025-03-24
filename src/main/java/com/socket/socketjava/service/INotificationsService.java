@@ -20,4 +20,8 @@ public interface INotificationsService extends IService<Notifications> {
     List<AcceptFriendVo> selectFriend(Integer userId);
 
     List<AcceptRoomsVo> selectRooms(Integer userId);
+
+    long countUnhandledFriendRequests(Integer userId);
+
+    long countUnhandledRoomInvitations(Integer userId);
 }
