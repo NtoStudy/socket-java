@@ -49,7 +49,7 @@ public class UserChatRooms implements Serializable {
     private String role;
 
     @ApiModelProperty(value = "是否置顶")
-    private Boolean isPinned;
+    private Integer isPinned;
 
     @ApiModelProperty(value = "禁言截止时间")
     private LocalDateTime mutedUntil;

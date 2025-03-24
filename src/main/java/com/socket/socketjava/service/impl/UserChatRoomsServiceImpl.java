@@ -74,7 +74,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                     new Notifications()
                             .setReceiverId(userIds)
                             .setRelatedId(roomId)
-                            .setContent(username + "邀请你加入群聊" + createRoomVo.getRoomName())
+                            .setContent(username + "聊邀请你加入群" + createRoomVo.getRoomName())
                             .setType("chatroom")
                             .setStatus(0)
             );
