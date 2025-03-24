@@ -68,11 +68,17 @@ public class UserChatRoomsController {
         } else {
             groupIsContainerUser.setIsContainer(0);
         }
-
-
         return Result.ok(groupIsContainerUser);
     }
 
+    @GetMapping("/getById")
+    @Operation(summary = "通过id查询群聊信息")
+    public Result<ChatRooms> getById(Integer roomId) {
+        ChatRooms chatRoom = chatRoomsService.getById(roomId);
+        return Result.ok(chatRoom);
+    }
+
+    // TODO在系统通知表也要进行通知
     @PostMapping("/addgroup")
     @Operation(summary = "申请加入群聊")
     public Result addGroup(String groupNumber) {

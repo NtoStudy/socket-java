@@ -169,9 +169,12 @@ create table user_chat_rooms
     status            tinyint    default 0                 null comment '用户在聊天室中的状态',
     role              enum ('群主', '管理员', '普通成员')  null comment '角色类型',
     is_pinned         tinyint(1) default 0                 null comment '是否置顶',
-    muted_until       timestamp                            null comment '禁言截止时间'
+    muted_until       timestamp                            null comment '禁言截止时间',
+    nickname          varchar(100)                         null comment '用户在群聊中的昵称'
 )
     comment '用户-聊天室关联表';
+
+
 
 -- auto-generated definition
 create table user_posts

@@ -66,6 +66,8 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
             UserChatRooms userChatRooms = new UserChatRooms();
             userChatRooms.setUserId(userIds);
             userChatRooms.setRoomId(roomId);
+            userChatRooms.setRole("普通成员");
+            userChatRooms.setStatus(0);
             userChatRoomsMapper.insert(userChatRooms);
             // 要将邀请信息插入到系统通知表中，以便用户得知信息
             notificationsMapper.insert(
@@ -77,7 +79,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                             .setStatus(0)
             );
         }
-        return username;
+        return groupNumber;
     }
 
     /**
@@ -130,13 +132,17 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
 
     @Override
     public void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status) {
-        // 这里的userId代指的是 "登录者的id也就是notifications表中的receiverId"
-        // roomId关联user_chat_rooms表中的room_id来查询出聊天室信息，并且userId和这个表中的user_id相同然后修改状态
+
         LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userChatRoomsLambdaUpdateWrapper
+                .eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)
                 .set(UserChatRooms::getStatus, status);
-        this.update(userChatRoomsLambdaUpdateWrapper);
+        if (status == 1) {
+            // 如果接受邀请，设置为普通成员
+            userChatRoomsLambdaUpdateWrapper.set(UserChatRooms::getRole, "普通成员");
+        }
+        update(userChatRoomsLambdaUpdateWrapper);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.socket.socketjava.domain.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -17,7 +18,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-03-21
+ * @since 2025-03-24
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -52,6 +53,9 @@ public class UserChatRooms implements Serializable {
 
     @ApiModelProperty(value = "禁言截止时间")
     private LocalDateTime mutedUntil;
+
+    @ApiModelProperty(value = "用户在群聊中的昵称")
+    private String nickname;
 
 
 }
