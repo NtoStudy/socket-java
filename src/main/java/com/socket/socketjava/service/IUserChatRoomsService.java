@@ -1,9 +1,11 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.GroupIsContainerUser;
 import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
+import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
 
 import java.util.List;
 
@@ -28,4 +30,22 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     Integer getMessageCount(Integer userId, Integer roomId);
 
     void addGroup(Integer userId, String groupNumber);
+
+    GroupIsContainerUser inquireGroup(String groupNumber, Integer userId);
+
+    GroupCountVo getPinnedGroups(Integer userId);
+
+    boolean setPinnedGroup(Integer userId, Integer roomId, Integer status);
+
+    GroupCountVo getCreatedGroups(Integer userId);
+
+    GroupCountVo getManagedGroups(Integer userId);
+
+    boolean updateNickname(Integer userId, Integer roomId, String nickname);
+
+    GroupCountVo getJoinedGroups(Integer userId);
+
+    void inviteToGroup(List<Integer> friendIds, Integer roomId);
+
+    String quitOrDismissGroup(Integer userId, Integer roomId);
 }

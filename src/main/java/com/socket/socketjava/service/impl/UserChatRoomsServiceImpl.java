@@ -2,9 +2,11 @@ package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.socket.socketjava.domain.dto.GroupIsContainerUser;
 import com.socket.socketjava.domain.pojo.*;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
+import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
 import com.socket.socketjava.mapper.ChatRoomsMapper;
 import com.socket.socketjava.mapper.NotificationsMapper;
 import com.socket.socketjava.mapper.UserChatRoomsMapper;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -197,5 +200,169 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                 .setContent(username + "申请加入群聊" + chatRoom.getRoomName())
                 .setType("chatroom")
                 .setStatus(0));
+    }
+
+
+    @Override
+    public GroupIsContainerUser inquireGroup(String groupNumber, Integer userId) {
+        GroupIsContainerUser groupIsContainerUser = new GroupIsContainerUser();
+        LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber, groupNumber);
+        ChatRooms chatRoom = chatRoomsMapper.selectOne(chatRoomsLambdaQueryWrapper);
+
+        groupIsContainerUser.setGroupNumber(chatRoom.getGroupNumber());
+        groupIsContainerUser.setRoomId(chatRoom.getRoomId());
+        groupIsContainerUser.setRoomName(chatRoom.getRoomName());
+        groupIsContainerUser.setAvatarUrl(chatRoom.getAvatarUrl());
+
+        // 判断用户是否在群聊中
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, groupIsContainerUser.getRoomId())
+                .eq(UserChatRooms::getStatus, 1);
+
+        if (getOne(userChatRoomsLambdaQueryWrapper) != null) {
+            groupIsContainerUser.setIsContainer(1);
+        } else {
+            groupIsContainerUser.setIsContainer(0);
+        }
+
+        return groupIsContainerUser;
+    }
+
+    @Override
+    public boolean setPinnedGroup(Integer userId, Integer roomId, Integer status) {
+        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .set(UserChatRooms::getIsPinned, status);
+
+        return update(userChatRoomsLambdaUpdateWrapper);
+    }
+
+    @Override
+    public GroupCountVo getPinnedGroups(Integer userId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getIsPinned, 1);
+
+        return getGroupCountVo(userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Override
+    public GroupCountVo getCreatedGroups(Integer userId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "群主");
+
+        return getGroupCountVo(userChatRoomsLambdaQueryWrapper);
+    }
+
+
+    @Override
+    public GroupCountVo getManagedGroups(Integer userId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "管理员");
+
+        return getGroupCountVo(userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Override
+    public GroupCountVo getJoinedGroups(Integer userId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getStatus, 1)
+                .eq(UserChatRooms::getRole, "普通成员");
+
+        return getGroupCountVo(userChatRoomsLambdaQueryWrapper);
+    }
+
+    @Override
+    public boolean updateNickname(Integer userId, Integer roomId, String nickname) {
+        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .set(UserChatRooms::getNickname, nickname);
+
+        return update(userChatRoomsLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void inviteToGroup(List<Integer> friendIds, Integer roomId) {
+        ChatRooms chatRoom = chatRoomsMapper.selectById(roomId);
+
+        for (Integer friendId : friendIds) {
+            UserChatRooms userChatRooms = new UserChatRooms();
+            userChatRooms.setUserId(friendId)
+                    .setRoomId(roomId)
+                    .setStatus(0)
+                    .setRole("普通成员")
+                    .setIsPinned(0);
+            save(userChatRooms);
+
+            // 插入到通知表中
+            Notifications notifications = new Notifications();
+            notifications.setReceiverId(friendId)
+                    .setRelatedId(roomId)
+                    .setContent("你被邀请加入群聊" + chatRoom.getRoomName())
+                    .setType("chatroom")
+                    .setStatus(0);
+            notificationsMapper.insert(notifications);
+        }
+    }
+
+    @Override
+    public String quitOrDismissGroup(Integer userId, Integer roomId) {
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1);
+        UserChatRooms userChatRooms = getOne(userChatRoomsLambdaQueryWrapper);
+
+        String role = userChatRooms.getRole();
+        if (role.equals("群主")) {
+            LambdaUpdateWrapper<UserChatRooms> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(UserChatRooms::getRoomId, roomId)
+                    .set(UserChatRooms::getStatus, 0);
+            update(updateWrapper);
+            return "群聊已解散";
+        } else if (role.equals("普通成员") || role.equals("管理员")) {
+            // 普通成员，直接退出
+            LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
+                    .eq(UserChatRooms::getRoomId, roomId)
+                    .eq(UserChatRooms::getStatus, 1)
+                    .set(UserChatRooms::getStatus, 0);
+            update(userChatRoomsLambdaUpdateWrapper);
+            return "已退出群聊";
+        }
+
+        return "操作失败";
+    }
+
+    // 提取公共方法
+    private GroupCountVo getGroupCountVo(LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper) {
+        GroupCountVo groupCountVo = new GroupCountVo();
+        List<UserChatRooms> userChatRoomsList = list(userChatRoomsLambdaQueryWrapper);
+
+        int size = userChatRoomsList.size();
+        groupCountVo.setGroupCount(size);
+
+        List<ChatRooms> chatRoomsList = new ArrayList<>();
+        for (UserChatRooms userChatRoom : userChatRoomsList) {
+            Integer roomId = userChatRoom.getRoomId();
+            ChatRooms chatRoom = chatRoomsMapper.selectById(roomId);
+            if (chatRoom != null) {
+                chatRoomsList.add(chatRoom);
+            }
+        }
+        groupCountVo.setChatRoomsList(chatRoomsList);
+        return groupCountVo;
     }
 }

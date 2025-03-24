@@ -54,25 +54,8 @@ public class UserChatRoomsController {
     @GetMapping("/inquire")
     @Operation(summary = "查询群聊")
     public Result<GroupIsContainerUser> inquire(String groupNumber) {
-        GroupIsContainerUser groupIsContainerUser = new GroupIsContainerUser();
-        LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber, groupNumber);
-        ChatRooms chatRoom = chatRoomsService.getOne(chatRoomsLambdaQueryWrapper);
-        groupIsContainerUser.setGroupNumber(chatRoom.getGroupNumber());
-        groupIsContainerUser.setRoomId(chatRoom.getRoomId());
-        groupIsContainerUser.setRoomName(chatRoom.getRoomName());
-        groupIsContainerUser.setAvatarUrl(chatRoom.getAvatarUrl());
-        // 判断用户是否在群聊中
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getRoomId, groupIsContainerUser.getRoomId())
-                .eq(UserChatRooms::getStatus, 1);
-        if (userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper) != null) {
-            groupIsContainerUser.setIsContainer(1);
-        } else {
-            groupIsContainerUser.setIsContainer(0);
-        }
+        GroupIsContainerUser groupIsContainerUser = userChatRoomsService.inquireGroup(groupNumber, userId);
         return Result.ok(groupIsContainerUser);
     }
 
@@ -130,25 +113,16 @@ public class UserChatRoomsController {
     @GetMapping("/pinnedGroup")
     public Result pinnedGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        GroupCountVo groupCountVo = new GroupCountVo();
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getStatus, 1)
-                .eq(UserChatRooms::getIsPinned, 1);
-        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+        GroupCountVo groupCountVo = userChatRoomsService.getPinnedGroups(userId);
+        return Result.ok(groupCountVo);
     }
 
     @Operation(summary = "置顶群聊")
     @PostMapping("/pinnedGroup")
     public Result setPinnedGroup(Integer roomId, Integer status) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getRoomId, roomId)
-                .eq(UserChatRooms::getStatus, 1)
-                .set(UserChatRooms::getIsPinned, status);
-        boolean update = userChatRoomsService.update(userChatRoomsLambdaUpdateWrapper);
-        return Result.ok(update);
+        boolean result = userChatRoomsService.setPinnedGroup(userId, roomId, status);
+        return Result.ok(status == 1 ? "置顶成功" : "取消置顶成功");
     }
 
 
@@ -156,133 +130,46 @@ public class UserChatRoomsController {
     @GetMapping("/createGroup")
     public Result createGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        GroupCountVo groupCountVo = new GroupCountVo();
-
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getStatus, 1)
-                .eq(UserChatRooms::getRole, "群主");
-        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+        GroupCountVo groupCountVo = userChatRoomsService.getCreatedGroups(userId);
+        return Result.ok(groupCountVo);
     }
 
     @Operation(summary = "获取管理群聊信息")
     @GetMapping("/manageGroup")
     public Result manageGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        GroupCountVo groupCountVo = new GroupCountVo();
-
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getStatus, 1)
-                .eq(UserChatRooms::getRole, "管理员");
-        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+        GroupCountVo groupCountVo = userChatRoomsService.getManagedGroups(userId);
+        return Result.ok(groupCountVo);
     }
 
     @Operation(summary = "加入群聊信息")
     @GetMapping("/joinGroup")
     public Result joinGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        GroupCountVo groupCountVo = new GroupCountVo();
-
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getStatus, 1)
-                .eq(UserChatRooms::getRole, "普通成员");
-        return getResult(groupCountVo, userChatRoomsLambdaQueryWrapper);
+        GroupCountVo groupCountVo = userChatRoomsService.getJoinedGroups(userId);
+        return Result.ok(groupCountVo);
     }
 
     @Operation(summary = "修改自己本群昵称")
     @PutMapping("/nickname")
     public Result updateNickname(String nickname, Integer roomId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getRoomId, roomId)
-                .eq(UserChatRooms::getStatus, 1)
-                .set(UserChatRooms::getNickname, nickname);
-        boolean update = userChatRoomsService.update(userChatRoomsLambdaUpdateWrapper);
-
-        return Result.ok(update);
+        boolean result = userChatRoomsService.updateNickname(userId, roomId, nickname);
+        return Result.ok(result);
     }
-
 
     @Operation(summary = "邀请新成员")
     @PostMapping("/invite")
-    //TODO后续去判断这个人是否在群中
     public Result invite(@RequestBody List<Integer> FriendIds, Integer roomId) {
-        // 这里和创建群里的逻辑差不多，但是不用插入自己了
-        for (Integer friendId : FriendIds) {
-            UserChatRooms userChatRooms = new UserChatRooms();
-            userChatRooms.setUserId(friendId)
-                    .setRoomId(roomId)
-                    .setStatus(0)
-                    .setRole("普通成员")
-                    .setIsPinned(0);
-            userChatRoomsService.save(userChatRooms);
-
-            // 插入到通知表中
-            Notifications notifications = new Notifications();
-            notifications.setReceiverId(friendId)
-                    .setRelatedId(roomId)
-                    .setContent("你被邀请加入群聊" + chatRoomsService.getById(roomId).getRoomName())
-                    .setType("chatroom")
-                    .setStatus(0);
-            notificationsService.save(notifications);
-        }
-
-        return Result.ok("邀请以发出");
+        userChatRoomsService.inviteToGroup(FriendIds, roomId);
+        return Result.ok("邀请已发出");
     }
-
 
     @Operation(summary = "退出或者解散群聊")
     @PutMapping("/quit")
     public Result quit(Integer roomId) {
-        // 从这里判断，如果是普通成员，就直接退出，如果是群主，就解散群聊
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
-                .eq(UserChatRooms::getRoomId, roomId)
-                .eq(UserChatRooms::getStatus, 1);
-        UserChatRooms userChatRooms = userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper);
-
-        String role = userChatRooms.getRole();
-        if (role.equals("群主")) {
-            LambdaUpdateWrapper<UserChatRooms> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.eq(UserChatRooms::getRoomId, roomId)
-                    .set(UserChatRooms::getStatus, 0);
-            userChatRoomsService.update(updateWrapper);
-
-        } else if (role.equals("普通成员") || role.equals("管理员")) {
-            // 普通成员，直接退出
-            LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
-                    .eq(UserChatRooms::getRoomId, roomId)
-                    .eq(UserChatRooms::getStatus, 1)
-                    .set(UserChatRooms::getStatus, 0);
-            userChatRoomsService.update(userChatRoomsLambdaUpdateWrapper);
-        }
-
-
-        return Result.ok(role.equals("群主") ? "群聊已解散" : "已退出群聊");
+        String message = userChatRoomsService.quitOrDismissGroup(userId, roomId);
+        return Result.ok(message);
     }
-
-    private Result getResult(GroupCountVo groupCountVo, LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper) {
-        List<UserChatRooms> userChatRoomsList = userChatRoomsService.list(userChatRoomsLambdaQueryWrapper);
-
-        int size = userChatRoomsList.size();
-        groupCountVo.setGroupCount(size);
-
-        List<ChatRooms> chatRoomsList = new ArrayList<>();
-        for (UserChatRooms userChatRoom : userChatRoomsList) {
-            Integer roomId = userChatRoom.getRoomId();
-            ChatRooms chatRoom = chatRoomsService.getById(roomId);
-            if (chatRoom != null) {
-                chatRoomsList.add(chatRoom);
-            }
-        }
-        groupCountVo.setChatRoomsList(chatRoomsList);
-        return Result.ok(groupCountVo);
-    }
-
-
 }
