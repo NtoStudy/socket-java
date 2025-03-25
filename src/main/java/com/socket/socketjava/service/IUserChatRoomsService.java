@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 
 import java.util.List;
 
@@ -56,4 +57,8 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     void setAdmin(Integer roomId, Integer userId, Integer status);
 
     void transferOwner(Integer roomId, Integer userId, Integer userId1);
+
+    List<AcceptRoomsVo> getGroupApplyList(Integer userId);
+
+    void approveGroupApplication(Integer adminId, Integer userId, Integer roomId, Integer status);
 }

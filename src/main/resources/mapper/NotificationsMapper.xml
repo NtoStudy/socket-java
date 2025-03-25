@@ -8,7 +8,24 @@
         from notifications
         where receiver_id = #{userId} and type = 'friend'
     </select>
-
+    <select id="selectGroupAppliesByReceiverId" parameterType="java.lang.Integer"
+            resultType="com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo">
+        SELECT
+            n.related_id as room_id,
+            cr.room_name,
+            cr.creator_id,
+            cr.avatar_url,
+            n.status,
+            n.content,
+            n.creator_id as applicant_id,
+            u.username as applicant_name
+        FROM notifications n
+                 JOIN chat_rooms cr ON n.related_id = cr.room_id
+                 JOIN users u ON n.creator_id = u.user_id
+        WHERE n.receiver_id = #{userId}
+          AND n.type = 'group_apply'
+        ORDER BY n.created_at DESC
+    </select>
 
 
 </mapper>

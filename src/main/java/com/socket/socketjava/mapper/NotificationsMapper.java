@@ -2,6 +2,9 @@ package com.socket.socketjava.mapper;
 
 import com.socket.socketjava.domain.pojo.Notifications;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
+
+import java.util.List;
 
 
 /**
@@ -18,4 +21,5 @@ public interface NotificationsMapper extends BaseMapper<Notifications> {
     Notifications selectByReceiverId(Integer userId);
 
 
+    List<AcceptRoomsVo> selectGroupAppliesByReceiverId(Integer userId);
 }

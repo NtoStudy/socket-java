@@ -51,44 +51,12 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
         notificationsMapper.insert(new Notifications()
                 .setReceiverId(friend.getUserId())
                 .setRelatedId(friends.getRelationId())
+                .setCreatorId(user.getUserId())
                 .setContent(user.getUsername() + " 请求加为好友")
                 .setType("friend")
                 .setStatus(0));
     }
 
-    @Override
-    public void acceptOrRejectFriend(Integer relationId, Integer status) {
-
-        Friends friends = getById(relationId);
-        friends.setStatus(status);
-        updateById(friends);
-
-
-        if (status == 1) {
-            // 代表同意，直接插入两条数据
-            Integer userId = friends.getUserId();
-            Integer friendId = friends.getFriendId();
-
-            Friends newFriend = new Friends();
-            newFriend.setUserId(friendId);
-            newFriend.setFriendId(userId);
-            newFriend.setStatus(1);
-            // TODO后续把默认分组搞定之后，插入分组
-            LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            friendsLambdaQueryWrapper
-                    .eq(Friends::getUserId, friendId)
-                    .eq(Friends::getFriendId, userId);
-            Friends one = getOne(friendsLambdaQueryWrapper);
-
-            if (one != null) {
-                // 证明已经存在了，更新状态
-                one.setStatus(1);
-                updateById(one);
-            } else {
-                save(newFriend);
-            }
-        }
-    }
 
 
     @Override
@@ -138,9 +106,56 @@ public class FriendsServiceImpl extends ServiceImpl<FriendsMapper, Friends> impl
                 .update();
     }
 
+    public void acceptOrRejectFriend(Integer relationId, Integer status) {
+
+        Friends friends = getById(relationId);
+        friends.setStatus(status);
+        updateById(friends);
+
+
+        if (status == 1) {
+            // 代表同意，直接插入两条数据
+            Integer userId = friends.getUserId();
+            Integer friendId = friends.getFriendId();
+
+            Friends newFriend = new Friends();
+            newFriend.setUserId(friendId);
+            newFriend.setFriendId(userId);
+            newFriend.setStatus(1);
+            // TODO后续把默认分组搞定之后，插入分组
+            LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            friendsLambdaQueryWrapper
+                    .eq(Friends::getUserId, friendId)
+                    .eq(Friends::getFriendId, userId);
+            Friends one = getOne(friendsLambdaQueryWrapper);
+
+            if (one != null) {
+                // 证明已经存在了，更新状态
+                one.setStatus(1);
+                updateById(one);
+            } else {
+                save(newFriend);
+            }
+        }
+
+    }
+
     @Override
     public String handleFriendRequest(Integer relationId, Integer status) {
+        // 现有代码
         acceptOrRejectFriend(relationId, status);
+
+        // 需要添加通知逻辑
+        Friends friends = getById(relationId);
+        if (friends != null) {
+            Notifications notification = new Notifications();
+            notification.setReceiverId(friends.getUserId())
+                    .setContent(status == 1 ? "对方已接受您的好友请求" : "对方已拒绝您的好友请求")
+                    .setType("friend_response")
+                    .setStatus(0)
+                    .setCreatorId(friends.getFriendId());
+            notificationsMapper.insert(notification);
+        }
 
         if (status == 1) return "已接受";
         else if (status == 2) return "已拒绝";

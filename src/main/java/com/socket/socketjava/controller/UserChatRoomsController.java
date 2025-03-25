@@ -6,6 +6,7 @@ import com.socket.socketjava.domain.pojo.ChatRooms;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IChatRoomsService;
 import com.socket.socketjava.service.IUserChatRoomsService;
@@ -60,7 +61,6 @@ public class UserChatRoomsController {
         return Result.ok(chatRoom);
     }
 
-    // TODO发送的通知只有群主或者管理员才能收得到
     @PostMapping("/addgroup")
     @Operation(summary = "申请加入指定群聊")
     public Result addGroup(String groupNumber) {
@@ -186,7 +186,7 @@ public class UserChatRoomsController {
     @Operation(summary = "设置管理员")
     @PostMapping("/setAdmin")
     public Result setAdmin(Integer roomId, Integer userId, Integer status) {
-        userChatRoomsService.setAdmin(roomId, userId,status);
+        userChatRoomsService.setAdmin(roomId, userId, status);
         return Result.ok(status == 1 ? "设置成功" : "取消设置成功");
     }
 
@@ -201,13 +201,17 @@ public class UserChatRoomsController {
     //TODO 入群申请，入群审批
     @Operation(summary = "查看入群申请列表")
     @GetMapping("/applyList")
-    public Result applyList() {
-       return Result.ok();
+    public Result<List<AcceptRoomsVo>> applyList() {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        List<AcceptRoomsVo> applyList = userChatRoomsService.getGroupApplyList(userId);
+        return Result.ok(applyList);
     }
 
     @Operation(summary = " 审批入群申请")
-    @PostMapping("/applyList")
+    @PostMapping("/approveApplication")
     public Result applyList(Integer userId, Integer roomId, Integer status) {
-        return Result.ok();
+        Integer adminId = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.approveGroupApplication(adminId, userId, roomId, status);
+        return Result.ok(status == 1 ? "已同意" : "已拒绝");
     }
 }

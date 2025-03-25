@@ -49,7 +49,7 @@ public class NotificationsController {
         return Result.ok(count);
     }
 
-
+    //TODO后续分析notification的type字段的类型，可以拓展枚举或者是其他的
     @GetMapping("/chatroom")
     @Operation(summary = "获取用户的所有群聊通知")
     public Result<List<AcceptRoomsVo>> noAcceptRooms() {

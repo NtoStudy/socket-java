@@ -7,6 +7,7 @@ import com.socket.socketjava.domain.pojo.*;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
+import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.mapper.ChatRoomsMapper;
 import com.socket.socketjava.mapper.NotificationsMapper;
 import com.socket.socketjava.mapper.UserChatRoomsMapper;
@@ -135,7 +136,6 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
 
     @Override
     public void acceptOrRejectChatRoom(Integer userId, Integer roomId, Integer status) {
-
         LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userChatRoomsLambdaUpdateWrapper
                 .eq(UserChatRooms::getUserId, userId)
@@ -145,6 +145,36 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
             // 如果接受邀请，设置为普通成员
             userChatRoomsLambdaUpdateWrapper.set(UserChatRooms::getRole, "普通成员");
         }
+
+        // 查询群聊信息
+        ChatRooms chatRoom = chatRoomsMapper.selectById(roomId);
+
+        // 查询邀请通知以获取邀请人ID
+        LambdaQueryWrapper<Notifications> notificationQuery = new LambdaQueryWrapper<>();
+        notificationQuery.eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getRelatedId, roomId)
+                .eq(Notifications::getType, "chatroom");
+        Notifications invitation = notificationsMapper.selectOne(notificationQuery);
+
+        Integer inviterId = invitation != null && invitation.getCreatorId() != null ?
+                invitation.getCreatorId() : chatRoom.getCreatorId();
+
+        // 发送通知给邀请人
+        if (inviterId != null) {
+            Users user = usersMapper.selectById(userId);
+            String username = user != null ? user.getUsername() : "用户";
+
+            Notifications notification = new Notifications();
+            notification.setReceiverId(inviterId)
+                    .setRelatedId(roomId)
+                    .setContent(username + (status == 1 ? "已接受您的群聊邀请" : "已拒绝您的群聊邀请"))
+                    .setType("group_invitation_response")
+                    .setStatus(0)
+                    .setCreatorId(userId);  // 设置响应者ID为creator_id
+            notificationsMapper.insert(notification);
+        }
+
+
         update(userChatRoomsLambdaUpdateWrapper);
     }
 
@@ -178,41 +208,44 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
 
     @Override
     public void addGroup(Integer userId, String groupNumber) {
-        // 从user表中查到userName
-        Users users = usersMapper.selectById(userId);
-        String username = users.getUsername();
-        // 从chatRooms表中查到roomId
+        // 查询群聊信息
         LambdaQueryWrapper<ChatRooms> chatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         chatRoomsLambdaQueryWrapper.eq(ChatRooms::getGroupNumber, groupNumber);
-        ChatRooms chatRoom = chatRoomsMapper.selectOne(chatRoomsLambdaQueryWrapper);
-        Integer roomId = chatRoom.getRoomId();
-        // 先保存到userChatRooms表中
-        UserChatRooms userChatRooms = new UserChatRooms();
-        userChatRooms.setRoomId(roomId)
-                .setUserId(userId)
-                .setStatus(0)
-                .setRole("普通成员");
-        this.save(userChatRooms);
+        ChatRooms chatRooms = chatRoomsMapper.selectOne(chatRoomsLambdaQueryWrapper);
+        if (chatRooms == null) {
+            throw new RuntimeException("群聊不存在");
+        }
 
-        // 查询群主和所有管理员
+        // 获取用户名
+        String username = usersMapper.selectById(userId).getUsername();
+
+        // 查询群主和管理员
         LambdaQueryWrapper<UserChatRooms> adminQueryWrapper = new LambdaQueryWrapper<>();
-        adminQueryWrapper.eq(UserChatRooms::getRoomId, roomId)
+        adminQueryWrapper
+                .eq(UserChatRooms::getRoomId, chatRooms.getRoomId())
                 .eq(UserChatRooms::getStatus, 1)
                 .in(UserChatRooms::getRole, "群主", "管理员");
+        List<UserChatRooms> admins = userChatRoomsMapper.selectList(adminQueryWrapper);
 
-        List<UserChatRooms> admins = list(adminQueryWrapper);
-
-        // 向群主和所有管理员发送通知
-        String notificationContent = username + "申请加入群聊" + chatRoom.getRoomName();
-
+        // 向群主和管理员发送通知
         for (UserChatRooms admin : admins) {
-            notificationsMapper.insert(new Notifications()
+            Notifications notification = new Notifications()
                     .setReceiverId(admin.getUserId())
-                    .setRelatedId(roomId)
-                    .setContent(notificationContent)
-                    .setType("chatroom")
-                    .setStatus(0));
+                    .setRelatedId(chatRooms.getRoomId())
+                    .setContent(username + "申请加入群聊" + chatRooms.getRoomName())
+                    .setType("group_apply")
+                    .setStatus(0)
+                    .setCreatorId(userId);
+            notificationsMapper.insert(notification);
         }
+
+        // 将用户添加到群聊中，状态为待审核
+        UserChatRooms newUserChatRoom = new UserChatRooms();
+        newUserChatRoom.setUserId(userId);
+        newUserChatRoom.setRoomId(chatRooms.getRoomId());
+        newUserChatRoom.setRole("普通成员");
+        newUserChatRoom.setStatus(0);  // 待审核状态
+        userChatRoomsMapper.insert(newUserChatRoom);
     }
 
 
@@ -325,7 +358,8 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                     .setRelatedId(roomId)
                     .setContent(username + "邀请你加入群" + chatRoom.getRoomName())
                     .setType("chatroom")
-                    .setStatus(0);
+                    .setStatus(0)
+                    .setCreatorId(userId);
             notificationsMapper.insert(notifications);
         }
     }
@@ -377,6 +411,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                     .set(UserChatRooms::getStatus, 0);
             update(userChatRoomsLambdaUpdateWrapper);
         }
+
     }
 
     @Override
@@ -409,6 +444,106 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                 .set(UserChatRooms::getRole, "普通成员");
         update(chatRoomsLambdaUpdateWrapper);
     }
+
+    @Override
+    public List<AcceptRoomsVo> getGroupApplyList(Integer userId) {
+        // 获取用户作为管理员或群主的群聊申请
+        List<AcceptRoomsVo> applyList = notificationsMapper.selectGroupAppliesByReceiverId(userId);
+
+        // 将通知状态更新为已读
+        LambdaUpdateWrapper<Notifications> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper
+                .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getType, "group_apply")
+                .eq(Notifications::getStatus, 0)
+                .set(Notifications::getStatus, 1);
+        notificationsMapper.update(null, updateWrapper);
+
+        return applyList;
+    }
+
+
+    @Override
+    public void approveGroupApplication(Integer adminId, Integer userId, Integer roomId, Integer status) {
+        // 1. 验证审批人是否为群主或管理员
+        LambdaQueryWrapper<UserChatRooms> adminQueryWrapper = new LambdaQueryWrapper<>();
+        adminQueryWrapper
+                .eq(UserChatRooms::getUserId, adminId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .in(UserChatRooms::getRole, "群主", "管理员");
+        UserChatRooms admin = userChatRoomsMapper.selectOne(adminQueryWrapper);
+        if (admin == null) {
+            throw new RuntimeException("您没有权限审批该申请");
+        }
+
+        // 2. 查询申请人的申请记录
+        LambdaQueryWrapper<UserChatRooms> applicantQueryWrapper = new LambdaQueryWrapper<>();
+        applicantQueryWrapper
+                .eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId);
+        UserChatRooms applicant = userChatRoomsMapper.selectOne(applicantQueryWrapper);
+        if (applicant == null) {
+            throw new RuntimeException("未找到该用户的申请记录");
+        }
+
+        // 3. 获取群聊和用户信息
+        ChatRooms chatRoom = chatRoomsMapper.selectById(roomId);
+        Users user = usersMapper.selectById(userId);
+        if (chatRoom == null || user == null) {
+            throw new RuntimeException("群聊或用户不存在");
+        }
+
+        // 4. 处理申请
+        if (status == 1) {
+            // 接受申请
+            LambdaUpdateWrapper<UserChatRooms> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper
+                    .eq(UserChatRooms::getUserId, userId)
+                    .eq(UserChatRooms::getRoomId, roomId)
+                    .set(UserChatRooms::getStatus, 1); // 设置为已加入状态
+            userChatRoomsMapper.update(null, updateWrapper);
+
+            // 发送通知给申请人
+            Notifications notification = new Notifications();
+            notification.setReceiverId(userId)
+                    .setContent("您的入群申请已被接受，欢迎加入「" + chatRoom.getRoomName() + "」")
+                    .setType("group_apply_response")
+                    .setStatus(0)
+                    .setRelatedId(roomId)
+                    .setCreatorId(adminId);  // 设置管理员ID为creator_id
+            notificationsMapper.insert(notification);
+
+        } else if (status == 2) {
+            // 拒绝申请
+            LambdaUpdateWrapper<UserChatRooms> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper
+                    .eq(UserChatRooms::getUserId, userId)
+                    .eq(UserChatRooms::getRoomId, roomId);
+            userChatRoomsMapper.delete(updateWrapper); // 删除申请记录
+
+            // 发送通知给申请人
+            Notifications notification = new Notifications();
+            notification.setReceiverId(userId);
+            notification.setContent("您申请加入「" + chatRoom.getRoomName() + "」的请求已被拒绝");
+            notification.setType("chatroom");
+            notification.setStatus(0);
+            notification.setRelatedId(roomId);
+            notification.setCreatorId(adminId);
+            notificationsMapper.insert(notification);
+        } else {
+            throw new RuntimeException("无效的审批状态");
+        }
+
+        // 5. 更新通知状态
+        LambdaUpdateWrapper<Notifications> notificationUpdateWrapper = new LambdaUpdateWrapper<>();
+        notificationUpdateWrapper
+                .eq(Notifications::getType, "group_apply")
+                .eq(Notifications::getRelatedId, roomId)
+                .eq(Notifications::getCreatorId, userId)
+                .set(Notifications::getStatus, 1); // 标记为已处理
+        notificationsMapper.update(null, notificationUpdateWrapper);
+    }
+
 
     // 提取公共方法
     private GroupCountVo getGroupCountVo(LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper) {

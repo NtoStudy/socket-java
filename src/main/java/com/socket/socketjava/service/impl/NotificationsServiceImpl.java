@@ -58,8 +58,6 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
                 .eq(Notifications::getStatus, 0)
                 .set(Notifications::getStatus, 1);
         update(notificationsLambdaUpdateWrapper);
-
-        //TODO管理员处理申请
         return chatRoomsMapper.selectByCreatorId(userId);
     }
 

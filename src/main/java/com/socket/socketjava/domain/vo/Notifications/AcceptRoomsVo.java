@@ -10,4 +10,6 @@ public class AcceptRoomsVo {
     private String avatarUrl;
     private Integer status;
     private String content;
+    private Integer applicantId;
+    private String applicantName;
 }

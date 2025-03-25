@@ -18,9 +18,6 @@ public interface IFriendsService extends IService<Friends> {
 
     void addFriend(String userNumber, String friendNumber);
 
-
-    void acceptOrRejectFriend(Integer relationId, Integer status);
-
     List<FriendVo> friendList(Integer userId);
 
     Integer getMessageCount(Integer userId, Integer relationId);
