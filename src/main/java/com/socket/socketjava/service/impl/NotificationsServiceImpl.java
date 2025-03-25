@@ -50,23 +50,17 @@ public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, N
 
     @Override
     public List<AcceptRoomsVo> selectRooms(Integer userId) {
-        // 这里能获得roomName creatorId avatarUrl status content
+        // 将notifications表中的状态改为1,表示已经查过
         LambdaUpdateWrapper<Notifications> notificationsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         notificationsLambdaUpdateWrapper
                 .eq(Notifications::getReceiverId, userId)
+                .eq(Notifications::getType, "chatroom")
+                .eq(Notifications::getStatus, 0)
                 .set(Notifications::getStatus, 1);
-        this.update(notificationsLambdaUpdateWrapper);
-        List<AcceptRoomsVo> acceptRoomsVos = chatRoomsMapper.selectByCreatorId(userId);
-        List<AcceptRoomsVo> acceptRoomsVoss = chatRoomsMapper.selectManager(userId);
+        update(notificationsLambdaUpdateWrapper);
 
-        // 将acceptRoomsVos和acceptRoomsVoss合并
-        if (acceptRoomsVos != null && acceptRoomsVoss != null) {
-            acceptRoomsVos.addAll(acceptRoomsVoss);
-        } else if (acceptRoomsVos == null) {
-            acceptRoomsVos = acceptRoomsVoss;
-        }
-
-        return acceptRoomsVos;
+        //TODO管理员处理申请
+        return chatRoomsMapper.selectByCreatorId(userId);
     }
 
     @Override

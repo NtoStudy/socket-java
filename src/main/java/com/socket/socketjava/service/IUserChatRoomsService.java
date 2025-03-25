@@ -45,7 +45,15 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
 
     GroupCountVo getJoinedGroups(Integer userId);
 
-    void inviteToGroup(List<Integer> friendIds, Integer roomId);
+    void inviteToGroup(List<Integer> friendIds, Integer roomId, Integer userId);
 
     String quitOrDismissGroup(Integer userId, Integer roomId);
+
+    void changeGroupName(Integer roomId, String groupName);
+
+    void kickOut(Integer roomId, List<Integer> userIds);
+
+    void setAdmin(Integer roomId, Integer userId, Integer status);
+
+    void transferOwner(Integer roomId, Integer userId, Integer userId1);
 }

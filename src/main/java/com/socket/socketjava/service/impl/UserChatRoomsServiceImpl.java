@@ -77,7 +77,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                     new Notifications()
                             .setReceiverId(userIds)
                             .setRelatedId(roomId)
-                            .setContent(username + "聊邀请你加入群" + createRoomVo.getRoomName())
+                            .setContent(username + "邀请你加入群" + createRoomVo.getRoomName())
                             .setType("chatroom")
                             .setStatus(0)
             );
@@ -307,9 +307,9 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     }
 
     @Override
-    public void inviteToGroup(List<Integer> friendIds, Integer roomId) {
+    public void inviteToGroup(List<Integer> friendIds, Integer roomId, Integer userId) {
         ChatRooms chatRoom = chatRoomsMapper.selectById(roomId);
-
+        String username = usersMapper.selectById(userId).getUsername();
         for (Integer friendId : friendIds) {
             UserChatRooms userChatRooms = new UserChatRooms();
             userChatRooms.setUserId(friendId)
@@ -323,7 +323,7 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
             Notifications notifications = new Notifications();
             notifications.setReceiverId(friendId)
                     .setRelatedId(roomId)
-                    .setContent("你被邀请加入群聊" + chatRoom.getRoomName())
+                    .setContent(username + "邀请你加入群" + chatRoom.getRoomName())
                     .setType("chatroom")
                     .setStatus(0);
             notificationsMapper.insert(notifications);
@@ -357,6 +357,57 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
         }
 
         return "操作失败";
+    }
+
+    @Override
+    public void changeGroupName(Integer roomId, String groupName) {
+        LambdaUpdateWrapper<ChatRooms> chatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        chatRoomsLambdaUpdateWrapper.eq(ChatRooms::getRoomId, roomId)
+                .set(ChatRooms::getRoomName, groupName);
+        chatRoomsMapper.update(chatRoomsLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void kickOut(Integer roomId, List<Integer> userIds) {
+        for (Integer userId : userIds) {
+            LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            userChatRoomsLambdaUpdateWrapper
+                    .eq(UserChatRooms::getUserId, userId)
+                    .eq(UserChatRooms::getRoomId, roomId)
+                    .set(UserChatRooms::getStatus, 0);
+            update(userChatRoomsLambdaUpdateWrapper);
+        }
+    }
+
+    @Override
+    public void setAdmin(Integer roomId, Integer userId, Integer status) {
+        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userChatRoomsLambdaUpdateWrapper
+                .eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .set(UserChatRooms::getRole, status == 1 ? "管理员" : "普通成员");
+        update(userChatRoomsLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void transferOwner(Integer roomId, Integer userId, Integer userId1) {
+        // 将别人变成群主
+        LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userChatRoomsLambdaUpdateWrapper
+                .eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .set(UserChatRooms::getRole, "群主");
+        update(userChatRoomsLambdaUpdateWrapper);
+        // 自己变成普通成员
+        LambdaUpdateWrapper<UserChatRooms> chatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        chatRoomsLambdaUpdateWrapper
+                .eq(UserChatRooms::getUserId, userId1)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .set(UserChatRooms::getRole, "普通成员");
+        update(chatRoomsLambdaUpdateWrapper);
     }
 
     // 提取公共方法

@@ -19,5 +19,4 @@ public interface ChatRoomsMapper extends BaseMapper<ChatRooms> {
 
     List<AcceptRoomsVo> selectByCreatorId(Integer userId);
 
-    List<AcceptRoomsVo> selectManager(Integer userId);
 }

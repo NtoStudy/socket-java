@@ -6,8 +6,6 @@ import java.util.List;
 
 @Data
 public class CreateRoomVo {
-
     private String roomName;
-
     private List<Integer> userIds;
 }

@@ -12,6 +12,7 @@ import com.socket.socketjava.service.IUserChatRoomsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ import java.util.List;
  * @author 哞哞
  * @since 2025-02-06
  */
+@Slf4j
 @RestController
 @RequestMapping("/chat-rooms")
 @Tag(name = "群聊管理")
@@ -34,7 +36,6 @@ public class UserChatRoomsController {
     private IUserChatRoomsService userChatRoomsService;
     @Autowired
     private IChatRoomsService chatRoomsService;
-    @Autowired
 
     @PostMapping("/create")
     @Operation(summary = "创建新的群聊")
@@ -69,7 +70,7 @@ public class UserChatRoomsController {
     }
 
     @PutMapping("/accept")
-    @Operation(summary = "接受或拒绝群聊邀请") 
+    @Operation(summary = "接受或拒绝群聊邀请")
     public Result acceptOrReject(Integer roomId, Integer status) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         userChatRoomsService.acceptOrRejectChatRoom(userId, roomId, status);
@@ -79,7 +80,7 @@ public class UserChatRoomsController {
     }
 
     @GetMapping("/roomlist")
-    @Operation(summary = "获取用户加入的所有群聊") 
+    @Operation(summary = "获取用户加入的所有群聊")
     public Result<List<ChatRoomListVo>> roomList() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<ChatRoomListVo> list = userChatRoomsService.getRoomList(userId);
@@ -102,7 +103,7 @@ public class UserChatRoomsController {
     }
 
     //TODO 置顶群聊，创建群聊管理群聊，加入群的数量
-    @Operation(summary = "获取用户置顶的群聊列表") 
+    @Operation(summary = "获取用户置顶的群聊列表")
     @GetMapping("/pinnedGroup")
     public Result pinnedGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
@@ -127,7 +128,7 @@ public class UserChatRoomsController {
         return Result.ok(groupCountVo);
     }
 
-    @Operation(summary = "获取用户管理的群聊列表") 
+    @Operation(summary = "获取用户管理的群聊列表")
     @GetMapping("/manageGroup")
     public Result manageGroup() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
@@ -143,7 +144,7 @@ public class UserChatRoomsController {
         return Result.ok(groupCountVo);
     }
 
-    @Operation(summary = "修改用户在群聊中的昵称") 
+    @Operation(summary = "修改用户在群聊中的昵称")
     @PutMapping("/nickname")
     public Result updateNickname(String nickname, Integer roomId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
@@ -154,7 +155,8 @@ public class UserChatRoomsController {
     @Operation(summary = "邀请好友加入群聊")
     @PostMapping("/invite")
     public Result invite(@RequestBody List<Integer> FriendIds, Integer roomId) {
-        userChatRoomsService.inviteToGroup(FriendIds, roomId);
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.inviteToGroup(FriendIds, roomId, userId);
         return Result.ok("邀请已发出");
     }
 
@@ -164,5 +166,48 @@ public class UserChatRoomsController {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         String message = userChatRoomsService.quitOrDismissGroup(userId, roomId);
         return Result.ok(message);
+    }
+
+    @Operation(summary = "修改群昵称")
+    @PutMapping("/changeGroupName")
+    public Result changeGroupName(Integer roomId, String groupName) {
+        userChatRoomsService.changeGroupName(roomId, groupName);
+        return Result.ok("修改成功");
+    }
+
+    @Operation(summary = "踢出群成员")
+    @PutMapping("/kickOut")
+    public Result kickOut(Integer roomId, @RequestBody List<Integer> userIds) {
+        log.info("userIds:{}", userIds);
+        userChatRoomsService.kickOut(roomId, userIds);
+        return Result.ok("踢出成功");
+    }
+
+    @Operation(summary = "设置管理员")
+    @PostMapping("/setAdmin")
+    public Result setAdmin(Integer roomId, Integer userId, Integer status) {
+        userChatRoomsService.setAdmin(roomId, userId,status);
+        return Result.ok(status == 1 ? "设置成功" : "取消设置成功");
+    }
+
+    @Operation(summary = "转让群主")
+    @PostMapping("/transferOwner")
+    public Result transferOwner(Integer roomId, Integer userId) {
+        Integer userId1 = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.transferOwner(roomId, userId, userId1);
+        return Result.ok("转让成功");
+    }
+
+    //TODO 入群申请，入群审批
+    @Operation(summary = "查看入群申请列表")
+    @GetMapping("/applyList")
+    public Result applyList() {
+       return Result.ok();
+    }
+
+    @Operation(summary = " 审批入群申请")
+    @PostMapping("/applyList")
+    public Result applyList(Integer userId, Integer roomId, Integer status) {
+        return Result.ok();
     }
 }

@@ -32,7 +32,6 @@ public class UsersController {
 
     @Autowired
     private IUsersService usersService;
-    @Autowired
 
     @Operation(summary = "用户账号登录验证")
     @PostMapping("/login")
