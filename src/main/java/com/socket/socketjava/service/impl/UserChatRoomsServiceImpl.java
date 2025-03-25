@@ -190,16 +190,29 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
         UserChatRooms userChatRooms = new UserChatRooms();
         userChatRooms.setRoomId(roomId)
                 .setUserId(userId)
-                .setStatus(0);
+                .setStatus(0)
+                .setRole("普通成员");
         this.save(userChatRooms);
 
-        // 保存到系统通知表中，因为要通知对方
-        notificationsMapper.insert(new Notifications()
-                .setReceiverId(chatRoom.getCreatorId())
-                .setRelatedId(chatRoom.getRoomId())
-                .setContent(username + "申请加入群聊" + chatRoom.getRoomName())
-                .setType("chatroom")
-                .setStatus(0));
+        // 查询群主和所有管理员
+        LambdaQueryWrapper<UserChatRooms> adminQueryWrapper = new LambdaQueryWrapper<>();
+        adminQueryWrapper.eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1)
+                .in(UserChatRooms::getRole, "群主", "管理员");
+
+        List<UserChatRooms> admins = list(adminQueryWrapper);
+
+        // 向群主和所有管理员发送通知
+        String notificationContent = username + "申请加入群聊" + chatRoom.getRoomName();
+
+        for (UserChatRooms admin : admins) {
+            notificationsMapper.insert(new Notifications()
+                    .setReceiverId(admin.getUserId())
+                    .setRelatedId(roomId)
+                    .setContent(notificationContent)
+                    .setType("chatroom")
+                    .setStatus(0));
+        }
     }
 
 
@@ -231,14 +244,14 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     }
 
     @Override
-    public boolean setPinnedGroup(Integer userId, Integer roomId, Integer status) {
+    public void setPinnedGroup(Integer userId, Integer roomId, Integer status) {
         LambdaUpdateWrapper<UserChatRooms> userChatRoomsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userChatRoomsLambdaUpdateWrapper.eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)
                 .eq(UserChatRooms::getStatus, 1)
                 .set(UserChatRooms::getIsPinned, status);
 
-        return update(userChatRoomsLambdaUpdateWrapper);
+        update(userChatRoomsLambdaUpdateWrapper);
     }
 
     @Override

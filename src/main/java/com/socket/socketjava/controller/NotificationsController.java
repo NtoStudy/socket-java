@@ -1,7 +1,6 @@
 package com.socket.socketjava.controller;
 
 
-
 import com.socket.socketjava.domain.vo.Notifications.AcceptFriendVo;
 import com.socket.socketjava.domain.vo.Notifications.AcceptRoomsVo;
 import com.socket.socketjava.result.Result;
@@ -51,9 +50,8 @@ public class NotificationsController {
     }
 
 
-
     @GetMapping("/chatroom")
-    @Operation(summary = "获取所有未处理的群聊邀请")
+    @Operation(summary = "获取用户的所有群聊通知")
     public Result<List<AcceptRoomsVo>> noAcceptRooms() {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         List<AcceptRoomsVo> acceptRoomsVoList = iNotificationsService.selectRooms(userId);

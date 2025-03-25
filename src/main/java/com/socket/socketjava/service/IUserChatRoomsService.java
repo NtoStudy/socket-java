@@ -35,7 +35,7 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
 
     GroupCountVo getPinnedGroups(Integer userId);
 
-    boolean setPinnedGroup(Integer userId, Integer roomId, Integer status);
+    void setPinnedGroup(Integer userId, Integer roomId, Integer status);
 
     GroupCountVo getCreatedGroups(Integer userId);
 

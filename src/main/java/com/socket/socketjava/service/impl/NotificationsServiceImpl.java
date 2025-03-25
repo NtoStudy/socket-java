@@ -28,7 +28,7 @@ import java.util.List;
 @Slf4j
 public class NotificationsServiceImpl extends ServiceImpl<NotificationsMapper, Notifications> implements INotificationsService {
 
- 
+
     @Autowired
     private FriendsMapper friendsMapper;
     @Autowired
