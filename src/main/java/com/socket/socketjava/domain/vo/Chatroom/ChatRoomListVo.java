@@ -12,4 +12,8 @@ public class ChatRoomListVo {
 
     private String avatarUrl;
 
+    private Integer isPinned;
+
+    private String sentTime;
+
 }

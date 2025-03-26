@@ -1,8 +1,11 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.dto.GroupIsContainerUser;
+import com.socket.socketjava.domain.dto.GroupPlus;
 import com.socket.socketjava.domain.pojo.ChatRooms;
+import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
 import com.socket.socketjava.domain.vo.Chatroom.CreateRoomVo;
 import com.socket.socketjava.domain.vo.Chatroom.GroupCountVo;
@@ -56,9 +59,17 @@ public class UserChatRoomsController {
 
     @GetMapping("/getById")
     @Operation(summary = "通过ID查询群聊详情")
-    public Result<ChatRooms> getById(Integer roomId) {
+    public Result<GroupPlus> getById(Integer roomId) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
         ChatRooms chatRoom = chatRoomsService.getById(roomId);
-        return Result.ok(chatRoom);
+        GroupPlus groupPlus = new GroupPlus();
+        groupPlus.setChatRooms(chatRoom);
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1);
+        groupPlus.setIsPinned(userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper).getIsPinned());
+        return Result.ok(groupPlus);
     }
 
     @PostMapping("/addgroup")

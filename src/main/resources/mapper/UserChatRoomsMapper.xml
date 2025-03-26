@@ -5,6 +5,7 @@
     <select id="selectRoomList" resultType="com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo">
         select cr.room_id,
                ucr.user_id,
+               ucr.is_pinned,
                cr.room_name,
                cr.avatar_url,
                gm.sent_time

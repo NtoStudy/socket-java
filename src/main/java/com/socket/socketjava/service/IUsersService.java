@@ -32,5 +32,5 @@ public interface IUsersService extends IService<Users> {
 
     FriendPlus getUserInfoWithFriendRelation(Integer userId, Integer currentUserId);
 
-    boolean updateUserInfo(Users users, Integer userId);
+    void updateUserInfo(Users users, Integer userId);
 }

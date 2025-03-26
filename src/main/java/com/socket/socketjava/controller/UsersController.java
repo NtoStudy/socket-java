@@ -1,12 +1,16 @@
 package com.socket.socketjava.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.socket.socketjava.domain.dto.FriendPlus;
 import com.socket.socketjava.domain.dto.FriendIsContainerUser;
+import com.socket.socketjava.domain.dto.GroupUserInfo;
+import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.socket.socketjava.domain.pojo.Users;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
+import com.socket.socketjava.service.IUserChatRoomsService;
 import com.socket.socketjava.service.IUsersService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +36,8 @@ public class UsersController {
 
     @Autowired
     private IUsersService usersService;
+    @Autowired
+    private IUserChatRoomsService userChatRoomsService;
 
     @Operation(summary = "用户账号登录验证")
     @PostMapping("/login")
@@ -56,12 +62,31 @@ public class UsersController {
         return Result.ok(usersService.getById(userId));
     }
 
-    @Operation(summary = "根据用户ID查询用户详细信息")
+    @Operation(summary = "根据用户ID查询好友详细信息")
     @GetMapping("/infoById")
     public Result<FriendPlus> getUserInfoById(@RequestParam Integer userId) {
         Integer currentUserId = UserHolder.getLoginHolder().getUserId();
         FriendPlus friendPlus = usersService.getUserInfoWithFriendRelation(userId, currentUserId);
         return Result.ok(friendPlus);
+    }
+
+
+    @Operation(summary = "在群聊中根据用户ID查询用户详细信息")
+    @GetMapping("/userInfoByIdInGroup")
+    public Result<GroupUserInfo> UserInfoById(@RequestParam Integer userId, Integer roomId) {
+        GroupUserInfo groupUserInfo = new GroupUserInfo();
+        Users users = usersService.getById(userId);
+        groupUserInfo.setAvatar(users.getAvatarUrl());
+        groupUserInfo.setNumber(users.getNumber());
+        groupUserInfo.setUserId(users.getUserId());
+        groupUserInfo.setUsername(users.getUsername());
+        LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+                .eq(UserChatRooms::getRoomId, roomId)
+                .eq(UserChatRooms::getStatus, 1);
+        groupUserInfo.setNickname(userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper).getNickname());
+        groupUserInfo.setRole(userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper).getRole());
+        return Result.ok(groupUserInfo);
     }
 
     @Operation(summary = "根据用户账号查询用户信息")
@@ -80,7 +105,7 @@ public class UsersController {
         return Result.ok();
     }
 
-    @Operation(summary = "给指定用户点赞") 
+    @Operation(summary = "给指定用户点赞")
     @PutMapping("/like")
     public Result like(@RequestParam Integer friendId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
