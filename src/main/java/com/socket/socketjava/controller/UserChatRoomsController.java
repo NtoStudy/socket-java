@@ -63,7 +63,16 @@ public class UserChatRoomsController {
         Integer userId = UserHolder.getLoginHolder().getUserId();
         ChatRooms chatRoom = chatRoomsService.getById(roomId);
         GroupPlus groupPlus = new GroupPlus();
-        groupPlus.setChatRooms(chatRoom);
+
+
+        groupPlus.setRoomId(chatRoom.getRoomId());
+        groupPlus.setGroupNumber(chatRoom.getGroupNumber());
+        groupPlus.setRoomName(chatRoom.getRoomName());
+        groupPlus.setAvatarUrl(chatRoom.getAvatarUrl());
+        groupPlus.setAnnouncement(chatRoom.getAnnouncement());
+        groupPlus.setCreatorId(chatRoom.getCreatorId());
+        groupPlus.setPinnedMessageId(chatRoom.getPinnedMessageId());
+
         LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)
