@@ -367,7 +367,8 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
     @Override
     public String quitOrDismissGroup(Integer userId, Integer roomId) {
         LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
+        userChatRoomsLambdaQueryWrapper
+                .eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)
                 .eq(UserChatRooms::getStatus, 1);
         UserChatRooms userChatRooms = getOne(userChatRoomsLambdaQueryWrapper);

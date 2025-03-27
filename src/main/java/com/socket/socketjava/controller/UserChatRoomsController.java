@@ -68,7 +68,10 @@ public class UserChatRoomsController {
         userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)
                 .eq(UserChatRooms::getStatus, 1);
-        groupPlus.setIsPinned(userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper).getIsPinned());
+        UserChatRooms userChatRooms = userChatRoomsService.getOne(userChatRoomsLambdaQueryWrapper);
+        groupPlus.setIsPinned(userChatRooms.getIsPinned());
+        groupPlus.setNickname(userChatRooms.getNickname());
+        groupPlus.setRole(userChatRooms.getRole());
         return Result.ok(groupPlus);
     }
 

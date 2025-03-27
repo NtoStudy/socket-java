@@ -129,8 +129,24 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         // 组装返回数据
         FriendPlus friendPlus = new FriendPlus();
         friendPlus.setRemark(friend.getRemark());
-        friendPlus.setUsers(users);
         friendPlus.setIsPinned(friend.getIsPinned());
+        friendPlus.setUsername(users.getUsername());
+        friendPlus.setNumber(users.getNumber());
+        friendPlus.setAvatarUrl(users.getAvatarUrl());
+        friendPlus.setStatus(users.getStatus());
+        friendPlus.setCustomStatus(users.getCustomStatus());
+        friendPlus.setBirthday(users.getBirthday());
+        friendPlus.setHobbies(users.getHobbies());
+        friendPlus.setSignature(users.getSignature());
+        friendPlus.setGender(users.getGender());
+        friendPlus.setProvince(users.getProvince());
+        friendPlus.setCity(users.getCity());
+        friendPlus.setLikeCount(users.getLikeCount());
+        friendPlus.setUserId(users.getUserId());
+
+
+
+
 
         return friendPlus;
     }

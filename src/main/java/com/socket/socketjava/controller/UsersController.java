@@ -76,10 +76,19 @@ public class UsersController {
     public Result<GroupUserInfo> UserInfoById(@RequestParam Integer userId, Integer roomId) {
         GroupUserInfo groupUserInfo = new GroupUserInfo();
         Users users = usersService.getById(userId);
-        groupUserInfo.setAvatar(users.getAvatarUrl());
+        groupUserInfo.setAvatarUrl(users.getAvatarUrl());
         groupUserInfo.setNumber(users.getNumber());
         groupUserInfo.setUserId(users.getUserId());
         groupUserInfo.setUsername(users.getUsername());
+
+        groupUserInfo.setStatus(users.getStatus());
+        groupUserInfo.setCustomStatus(users.getCustomStatus());
+        groupUserInfo.setHobbies(users.getHobbies());
+        groupUserInfo.setLikeCount(users.getLikeCount());
+
+
+
+
         LambdaQueryWrapper<UserChatRooms> userChatRoomsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userChatRoomsLambdaQueryWrapper.eq(UserChatRooms::getUserId, userId)
                 .eq(UserChatRooms::getRoomId, roomId)

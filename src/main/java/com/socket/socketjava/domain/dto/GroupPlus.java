@@ -7,4 +7,6 @@ import lombok.Data;
 public class GroupPlus {
     private ChatRooms chatRooms;
     private Integer isPinned;
+    private String nickname;
+    private String role;
 }
