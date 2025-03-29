@@ -69,7 +69,6 @@ public class UserChatRoomsController {
         groupPlus.setGroupNumber(chatRoom.getGroupNumber());
         groupPlus.setRoomName(chatRoom.getRoomName());
         groupPlus.setAvatarUrl(chatRoom.getAvatarUrl());
-        groupPlus.setAnnouncement(chatRoom.getAnnouncement());
         groupPlus.setCreatorId(chatRoom.getCreatorId());
         groupPlus.setPinnedMessageId(chatRoom.getPinnedMessageId());
 
@@ -230,7 +229,7 @@ public class UserChatRoomsController {
         return Result.ok(applyList);
     }
 
-    @Operation(summary = " 审批入群申请")
+    @Operation(summary = "审批入群申请")
     @PostMapping("/approveApplication")
     public Result applyList(Integer userId, Integer roomId, Integer status) {
         Integer adminId = UserHolder.getLoginHolder().getUserId();

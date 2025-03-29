@@ -47,8 +47,7 @@ public class ChatRooms implements Serializable {
     @ApiModelProperty(value = "群组编号")
     private String groupNumber;
 
-    @ApiModelProperty(value = "群公告")
-    private String announcement;
+  
 
     @ApiModelProperty(value = "置顶消息ID")
     private Integer pinnedMessageId;
