@@ -24,6 +24,15 @@ spring:
           max-wait: -1
           max-idle: 8
           min-idle: 0
+  ai:
+    openai:
+      api-key: ${openai.api-key}
+      audio:
+        speech:
+          base-url: ${openai.api.base-url}
+          options:
+            model: ${openai.audio.speech.model}
+
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
