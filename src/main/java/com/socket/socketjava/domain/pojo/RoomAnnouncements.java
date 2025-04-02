@@ -51,13 +51,13 @@ public class RoomAnnouncements implements Serializable {
     private Integer lastUpdaterId;
 
     @ApiModelProperty(value = "公告状态（1: 有效, 0: 已撤回, 2: 已删除）")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty(value = "公告附件（图片、文件等URL，逗号分隔）")
     private String attachmentUrls;
 
     @ApiModelProperty(value = "是否置顶（1: 是, 0: 否）")
-    private Boolean isPinned;
+    private Integer isPinned;
 
 
 }

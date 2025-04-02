@@ -3,6 +3,8 @@ package com.socket.socketjava.mapper;
 import com.socket.socketjava.domain.pojo.RoomAnnouncements;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * <p>
  * 群公告表 Mapper 接口
@@ -13,4 +15,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface RoomAnnouncementsMapper extends BaseMapper<RoomAnnouncements> {
 
+    List<RoomAnnouncements> getAnnouncement(Integer roomId);
 }

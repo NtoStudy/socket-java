@@ -1,5 +1,6 @@
 package com.socket.socketjava.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.socket.socketjava.domain.pojo.RoomAnnouncements;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IRoomAnnouncementsService extends IService<RoomAnnouncements> {
 
+    void publishAnnouncement(Integer roomId, String content, String attachmentId, Integer isPinned, Integer userId);
+
+    void updateAnnouncement(Integer announcementId, String content, String attachmentUrls, Integer isPinned, Integer userId);
+
+    void deleteAnnouncement( Integer announcementId, Integer status, Integer userId);
+
+    void pinAnnouncement( Integer announcementId, Integer isPinned, Integer userId);
+
+    Page<RoomAnnouncements> getAnnouncementPage(Integer roomId, Integer pageNum, Integer pageSize);
 }
