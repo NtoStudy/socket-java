@@ -61,4 +61,10 @@ public interface IUserChatRoomsService extends IService<UserChatRooms> {
     List<AcceptRoomsVo> getGroupApplyList(Integer userId);
 
     void approveGroupApplication(Integer adminId, Integer userId, Integer roomId, Integer status);
+
+    void muteUser(Integer roomId, Integer userId, Integer silenceId, Integer duration);
+
+    void unmuteUser(Integer roomId, Integer silenceId, Integer userId);
+
+    Object getMuteStatus(Integer roomId, Integer silenceId);
 }

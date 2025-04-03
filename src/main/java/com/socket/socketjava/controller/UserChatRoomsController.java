@@ -236,4 +236,27 @@ public class UserChatRoomsController {
         userChatRoomsService.approveGroupApplication(adminId, userId, roomId, status);
         return Result.ok(status == 1 ? "已同意" : "已拒绝");
     }
+
+
+    @PostMapping("/mute")
+    @Operation(summary = "设置群成员禁言")
+    public Result muteUser(Integer roomId, Integer SilenceId, Integer duration) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.muteUser(roomId, userId, SilenceId, duration);
+        return Result.ok("禁言设置成功");
+    }
+
+    @PostMapping("/unmute")
+    @Operation(summary = "解除群成员禁言")
+    public Result unmuteUser(Integer roomId, Integer SilenceId) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        userChatRoomsService.unmuteUser(roomId, SilenceId, userId);
+        return Result.ok("已解除禁言");
+    }
+
+    @GetMapping("/mute/status")
+    @Operation(summary = "查询用户禁言状态")
+    public Result getMuteStatus(Integer roomId, Integer SilenceId) {
+        return Result.ok(userChatRoomsService.getMuteStatus(roomId, SilenceId));
+    }
 }

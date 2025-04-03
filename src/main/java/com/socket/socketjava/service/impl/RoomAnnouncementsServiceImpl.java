@@ -67,10 +67,10 @@ public class RoomAnnouncementsServiceImpl extends ServiceImpl<RoomAnnouncementsM
 
         LambdaQueryWrapper<RoomAnnouncements> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(RoomAnnouncements::getRoomId, roomId)
-                .eq(RoomAnnouncements::getStatus, 1)  // 只查询有效的公告
-                .orderByDesc(RoomAnnouncements::getIsPinned)  // 置顶公告优先
-                .orderByDesc(RoomAnnouncements::getUpdatedAt)  // 按更新时间降序
-                .orderByDesc(RoomAnnouncements::getCreatedAt); // 按创建时间降序
+                .eq(RoomAnnouncements::getStatus, 1)
+                .orderByDesc(RoomAnnouncements::getIsPinned)
+                .orderByDesc(RoomAnnouncements::getUpdatedAt)
+                .orderByDesc(RoomAnnouncements::getCreatedAt);
 
         return page(page, queryWrapper);
     }

@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-03-21
+ * @since 2025-04-03
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -44,17 +44,14 @@ public class UserPosts implements Serializable {
     @ApiModelProperty(value = "评论数")
     private Integer commentCount;
 
-    @ApiModelProperty(value = "标签")
-    private String tags;
-
     @ApiModelProperty(value = "发布时间")
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "隐私设置")
-    private String privacySetting;
-
     @ApiModelProperty(value = "是否删除")
-    private Boolean isDeleted;
+    private Integer isDeleted;
+
+    @ApiModelProperty(value = "是否置顶（1: 是, 0: 否）")
+    private Integer isPinned;
 
 
 }

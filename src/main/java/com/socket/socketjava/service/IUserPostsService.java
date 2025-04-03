@@ -1,7 +1,12 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.CommentDetail;
+import com.socket.socketjava.domain.dto.LikeDetail;
+import com.socket.socketjava.domain.dto.PostDetail;
 import com.socket.socketjava.domain.pojo.UserPosts;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +18,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserPostsService extends IService<UserPosts> {
 
+    void createPost(Integer userId, String content, String mediaType, String mediaUrl);
+
+    PostDetail getPostDetail(Integer postId);
+
+    List<CommentDetail> getCommentDetail(Integer postId);
+
+    List<LikeDetail> getLikeDetail(Integer postId);
 }

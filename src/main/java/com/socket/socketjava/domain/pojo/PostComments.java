@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author 哞哞
- * @since 2025-03-21
+ * @since 2025-04-03
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -46,6 +46,9 @@ public class PostComments implements Serializable {
 
     @ApiModelProperty(value = "父评论ID")
     private Integer parentCommentId;
+
+    @ApiModelProperty(value = "是否已删除（1: 是, 0: 否）")
+    private Boolean isDeleted;
 
 
 }

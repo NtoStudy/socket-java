@@ -2,6 +2,7 @@ package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.injector.methods.SelectOne;
 import com.socket.socketjava.domain.dto.GroupIsContainerUser;
 import com.socket.socketjava.domain.pojo.*;
 import com.socket.socketjava.domain.vo.Chatroom.ChatRoomListVo;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -543,6 +545,21 @@ public class UserChatRoomsServiceImpl extends ServiceImpl<UserChatRoomsMapper, U
                 .eq(Notifications::getCreatorId, userId)
                 .set(Notifications::getStatus, 1); // 标记为已处理
         notificationsMapper.update(null, notificationUpdateWrapper);
+    }
+
+    @Override
+    public void muteUser(Integer roomId, Integer userId, Integer silenceId, Integer duration) {
+        //TODO 禁言三件套先搁置一下
+    }
+
+    @Override
+    public void unmuteUser(Integer roomId, Integer silenceId, Integer userId) {
+
+    }
+
+    @Override
+    public Object getMuteStatus(Integer roomId, Integer silenceId) {
+        return null;
     }
 
 
