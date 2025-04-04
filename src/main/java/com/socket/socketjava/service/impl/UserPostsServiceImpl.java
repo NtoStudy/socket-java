@@ -1,6 +1,7 @@
 package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.domain.dto.LikeDetail;
@@ -38,14 +39,6 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
     private PostMediaMapper postMediaMapper;
     @Autowired
     private UserPostsMapper userPostsMapper;
-    @Autowired
-    private PostCommentsMapper postCommentsMapper;
-    @Autowired
-    private PostLikesMapper postLikesMapper;
-    @Autowired
-    private IUsersService usersService;
-    @Autowired
-    private IFriendsService friendsService;
 
     @Override
     public void createPost(Integer userId, String content, String mediaType, String mediaUrl) {
@@ -81,46 +74,61 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
     }
 
     @Override
-    public List<CommentDetail> getCommentDetail(Integer postId) {
-        LambdaQueryWrapper<PostComments> postCommentsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        postCommentsLambdaQueryWrapper.eq(PostComments::getPostId, postId)
-                .eq(PostComments::getIsDeleted, 0);
-        // 当前帖子下面所有的评论
-        List<PostComments> postComments = postCommentsMapper.selectList(postCommentsLambdaQueryWrapper);
-        if (postComments != null) {
-            for (PostComments postComment : postComments) {
-                CommentDetail commentDetail = new CommentDetail();
-                BeanUtils.copyProperties(postComment, commentDetail);
-                Integer userId = postComment.getUserId();
-                Users users = usersService.getById(userId);
-                commentDetail.setAvatarUrl(users.getAvatarUrl());
-                commentDetail.setUsername(users.getUsername());
-                return List.of(commentDetail);
-            }
-        }
-        return List.of();
+    public void topPost(Integer userId, Integer postId, Integer isTop) {
+        LambdaUpdateWrapper<UserPosts> userPostsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userPostsLambdaUpdateWrapper.eq(UserPosts::getPostId, postId)
+                .eq(UserPosts::getUserId, userId)
+                .eq(UserPosts::getIsDeleted, 0)
+                .set(UserPosts::getIsPinned, isTop);
+        update(userPostsLambdaUpdateWrapper);
     }
 
     @Override
-    public List<LikeDetail> getLikeDetail(Integer postId) {
-        LambdaQueryWrapper<PostLikes> postCommentsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        postCommentsLambdaQueryWrapper.eq(PostLikes::getPostId, postId)
-                .eq(PostLikes::getIsCancel, 0);
-        // 当前帖子下的所有点赞
-        List<PostLikes> postLikesList = postLikesMapper.selectList(postCommentsLambdaQueryWrapper);
+    public PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize) {
+        // 创建分页对象
+        Page<UserPosts> page = new Page<>(pageNum, pageSize);
 
-        for (PostLikes postLikes : postLikesList) {
-            LikeDetail likeDetail = new LikeDetail();
-            BeanUtils.copyProperties(postLikes, likeDetail);
-            Integer userId = postLikes.getUserId();
-            Users users = usersService.getById(userId);
-            likeDetail.setAvatarUrl(users.getAvatarUrl());
-            likeDetail.setUsername(users.getUsername());
-            return List.of(likeDetail);
+        // 创建查询条件：只查询自己的动态
+        LambdaQueryWrapper<UserPosts> userPostsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userPostsLambdaQueryWrapper
+                .eq(UserPosts::getUserId, userId)
+                .eq(UserPosts::getIsDeleted, 0)
+                .orderByDesc(UserPosts::getIsDeleted)
+                .orderByDesc(UserPosts::getCreatedAt);
+
+        // 执行分页查询 这里查询到的是所有的 自己发布的 动态
+        Page<UserPosts> postsPage = userPostsMapper.selectPage(page, userPostsLambdaQueryWrapper);
+
+        // 转换为PostDetail列表
+        List<PostDetail> postDetails = new ArrayList<>();
+        for (UserPosts post : postsPage.getRecords()) {
+            PostDetail detail = new PostDetail();
+            BeanUtils.copyProperties(post, detail);
+
+            // 获取媒体信息
+            LambdaQueryWrapper<PostMedia> mediaQueryWrapper = new LambdaQueryWrapper<>();
+            mediaQueryWrapper.eq(PostMedia::getPostId, post.getPostId());
+            PostMedia media = postMediaMapper.selectOne(mediaQueryWrapper);
+            if (media != null) {
+                detail.setMediaId(media.getMediaId());
+                detail.setMediaType(media.getMediaType());
+                detail.setMediaUrl(media.getMediaUrl());
+            }
+
+            postDetails.add(detail);
         }
 
-        return List.of();
+        // 构建返回结果
+        PageList<PostDetail> result = new PageList<>();
+        result.setTotal(postsPage.getTotal());
+        result.setList(postDetails);
+        result.setPageNum((int) postsPage.getCurrent());
+        result.setPageSize((int) postsPage.getSize());
+        result.setPages((int) postsPage.getPages());
+
+        return result;
     }
+
 
 //    @Override
 //    public PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize) {

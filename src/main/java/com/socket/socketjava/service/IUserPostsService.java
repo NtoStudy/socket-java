@@ -23,9 +23,10 @@ public interface IUserPostsService extends IService<UserPosts> {
 
     PostDetail getPostDetail(Integer postId);
 
-    List<CommentDetail> getCommentDetail(Integer postId);
+    void topPost(Integer userId, Integer postId, Integer isTop);
 
-    List<LikeDetail> getLikeDetail(Integer postId);
+    PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize);
+
 
 //    PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize);
 }

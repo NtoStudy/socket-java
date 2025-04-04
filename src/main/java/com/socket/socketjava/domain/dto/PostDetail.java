@@ -28,6 +28,12 @@ public class PostDetail {
     @ApiModelProperty(value = "发布时间")
     private LocalDateTime createdAt;
 
+    @ApiModelProperty(value = "是否删除")
+    private Integer isDeleted;
+
+    @ApiModelProperty(value = "是否置顶（1: 是, 0: 否）")
+    private Integer isPinned;
+
     @ApiModelProperty(value = "媒体ID")
     @TableId(value = "media_id", type = IdType.AUTO)
     private Integer mediaId;

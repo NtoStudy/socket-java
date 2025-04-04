@@ -1,7 +1,10 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.LikeDetail;
 import com.socket.socketjava.domain.pojo.PostLikes;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +17,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IPostLikesService extends IService<PostLikes> {
 
     void likePost(Integer postId, Integer userId, Integer isCancel);
+
+    List<LikeDetail> getLikeDetail(Integer postId);
 }

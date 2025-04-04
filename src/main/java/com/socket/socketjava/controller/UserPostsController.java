@@ -37,32 +37,33 @@ public class UserPostsController {
     @Operation(summary = "发布朋友圈")
     public Result createPost(String content, String mediaType, String mediaUrl) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        userPostsService.createPost(userId,content,mediaType,mediaUrl);
+        userPostsService.createPost(userId, content, mediaType, mediaUrl);
         return Result.ok("发布成功");
+    }
+
+    @Operation(summary = "查询自己发布的朋友圈列表")
+    @GetMapping("/getList")
+    public Result<PageList<PostDetail>> getList(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        PageList<PostDetail> pageInfo = userPostsService.getPostList(userId, pageNum, pageSize);
+        return Result.ok(pageInfo);
     }
 
     @GetMapping("/getById")
     @Operation(summary = "查询朋友圈详情")
     public Result<PostDetail> getById(Integer postId) {
-        PostDetail postDetail =  userPostsService.getPostDetail(postId);
+        PostDetail postDetail = userPostsService.getPostDetail(postId);
         return Result.ok(postDetail);
     }
 
-    @GetMapping("/getByIdToComment")
-    @Operation(summary = "查询朋友圈评论")
-    public Result<List<CommentDetail>> getByIdToComment(Integer postId) {
-        List<CommentDetail> commentDetailList = userPostsService.getCommentDetail(postId);
-        return Result.ok(commentDetailList);
+    @Operation(summary = "给朋友圈置顶/取消置顶")
+    @PostMapping("/topPost")
+    public Result<String> topPost(Integer postId, Integer isTop) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        userPostsService.topPost(userId, postId, isTop);
+        return Result.ok(isTop == 1 ? "置顶成功" : "取消置顶成功");
     }
-
-    @GetMapping("/getByIdToLike")
-    @Operation(summary = "查询朋友圈点赞")
-    public Result<List<LikeDetail>> getByIdToLike(Integer postId) {
-        List<LikeDetail> commentDetailList = userPostsService.getLikeDetail(postId);
-        return Result.ok(commentDetailList);
-    }
-
-
 
 
 //    @Operation(summary = "查询朋友圈列表")

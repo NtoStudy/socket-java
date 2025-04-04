@@ -1,7 +1,10 @@
 package com.socket.socketjava.service;
 
+import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.domain.pojo.PostComments;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +17,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IPostCommentsService extends IService<PostComments> {
 
     void commentPost(Integer postId, Integer userId, String content, Integer parentCommentId);
+
+    List<CommentDetail> getCommentDetail(Integer postId);
+
+    void deleteById(Integer commentId, Integer userId);
 }

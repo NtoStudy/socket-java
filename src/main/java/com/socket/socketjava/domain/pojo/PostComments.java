@@ -48,7 +48,7 @@ public class PostComments implements Serializable {
     private Integer parentCommentId;
 
     @ApiModelProperty(value = "是否已删除（1: 是, 0: 否）")
-    private Boolean isDeleted;
+    private Integer isDeleted;
 
 
 }
