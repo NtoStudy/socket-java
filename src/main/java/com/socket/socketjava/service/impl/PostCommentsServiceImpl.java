@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, PostComments> implements IPostCommentsService {
 
+    @Override
+    public void commentPost(Integer postId, Integer userId, String content, Integer parentCommentId) {
+
+    }
 }

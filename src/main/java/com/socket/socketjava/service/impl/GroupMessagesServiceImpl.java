@@ -3,7 +3,7 @@ package com.socket.socketjava.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.socket.socketjava.domain.dto.MessageListDTO;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.socket.socketjava.mapper.GroupMessagesMapper;
 import com.socket.socketjava.service.IGroupMessagesService;
@@ -31,7 +31,7 @@ public class GroupMessagesServiceImpl extends ServiceImpl<GroupMessagesMapper, G
 
     @Override
     @Cacheable(value = "groupChatHistory", key = "'history:' + #chatRoomId + ':' + #pageNum + ':' + #pageSize")
-    public MessageListDTO<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize) {
+    public PageList<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<GroupMessages> groupMessagesList = groupMessagesMapper.getHistoryList(userId, chatRoomId);
 
@@ -47,15 +47,15 @@ public class GroupMessagesServiceImpl extends ServiceImpl<GroupMessagesMapper, G
 
 
         PageInfo<GroupMessages> groupMessagesPageInfo = new PageInfo<>(groupMessagesList);
-        MessageListDTO<GroupMessages> groupMessagesMessageListDTO = new MessageListDTO<>();
-        groupMessagesMessageListDTO.setTotal(groupMessagesPageInfo.getTotal());
-        groupMessagesMessageListDTO.setList(groupMessagesList);
-        groupMessagesMessageListDTO.setPageNum(groupMessagesPageInfo.getPageNum());
-        groupMessagesMessageListDTO.setPageSize(groupMessagesPageInfo.getPageSize());
-        groupMessagesMessageListDTO.setStartRow(groupMessagesPageInfo.getStartRow());
-        groupMessagesMessageListDTO.setEndRow(groupMessagesPageInfo.getEndRow());
-        groupMessagesMessageListDTO.setPages(groupMessagesPageInfo.getPages());
-        return groupMessagesMessageListDTO;
+        PageList<GroupMessages> groupMessagesPageList = new PageList<>();
+        groupMessagesPageList.setTotal(groupMessagesPageInfo.getTotal());
+        groupMessagesPageList.setList(groupMessagesList);
+        groupMessagesPageList.setPageNum(groupMessagesPageInfo.getPageNum());
+        groupMessagesPageList.setPageSize(groupMessagesPageInfo.getPageSize());
+        groupMessagesPageList.setStartRow(groupMessagesPageInfo.getStartRow());
+        groupMessagesPageList.setEndRow(groupMessagesPageInfo.getEndRow());
+        groupMessagesPageList.setPages(groupMessagesPageInfo.getPages());
+        return groupMessagesPageList;
     }
 
     @Override

@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPostCommentsService extends IService<PostComments> {
 
+    void commentPost(Integer postId, Integer userId, String content, Integer parentCommentId);
 }

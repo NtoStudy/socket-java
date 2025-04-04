@@ -1,7 +1,7 @@
 package com.socket.socketjava.controller;
 
 
-import com.socket.socketjava.domain.dto.MessageListDTO;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IGroupMessagesService;
@@ -30,11 +30,11 @@ public class GroupMessagesController {
 
     @GetMapping("/history")
     @Operation(summary = "分页获取群聊历史消息")
-    public Result<MessageListDTO<GroupMessages>> history(@RequestParam Integer chatRoomId,
-                                                         @RequestParam Integer pageNum,
-                                                         @RequestParam Integer pageSize) {
+    public Result<PageList<GroupMessages>> history(@RequestParam Integer chatRoomId,
+                                                   @RequestParam Integer pageNum,
+                                                   @RequestParam Integer pageSize) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        MessageListDTO<GroupMessages> pageInfo = groupMessagesService.getHistoryList(userId, chatRoomId, pageNum, pageSize);
+        PageList<GroupMessages> pageInfo = groupMessagesService.getHistoryList(userId, chatRoomId, pageNum, pageSize);
         return Result.ok(pageInfo);
     }
 

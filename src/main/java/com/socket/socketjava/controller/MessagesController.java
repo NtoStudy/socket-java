@@ -1,7 +1,7 @@
 package com.socket.socketjava.controller;
 
 
-import com.socket.socketjava.domain.dto.MessageListDTO;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IMessagesService;
@@ -30,11 +30,11 @@ public class MessagesController {
 
     @GetMapping("/history")
     @Operation(summary = "分页获取与指定用户的聊天记录") 
-    public Result<MessageListDTO<Messages>> history(@RequestParam(value = "receiverId") Integer receiverId,
-                                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                                    @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+    public Result<PageList<Messages>> history(@RequestParam(value = "receiverId") Integer receiverId,
+                                              @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                              @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        MessageListDTO<Messages> pageInfo = iMessagesService.getHistoryList(userId, receiverId, pageNum, pageSize);
+        PageList<Messages> pageInfo = iMessagesService.getHistoryList(userId, receiverId, pageNum, pageSize);
         return Result.ok(pageInfo);
     }
 

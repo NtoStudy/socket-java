@@ -42,7 +42,7 @@ public class PostLikes implements Serializable {
     private LocalDateTime createdAt;
 
     @ApiModelProperty(value = "是否已删除（1: 是, 0: 否）")
-    private Boolean isCancel;
+    private Integer isCancel;
 
 
 }

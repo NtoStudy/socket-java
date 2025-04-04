@@ -3,17 +3,14 @@ package com.socket.socketjava.controller;
 
 import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.domain.dto.LikeDetail;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.dto.PostDetail;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IUserPostsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -65,5 +62,16 @@ public class UserPostsController {
         return Result.ok(commentDetailList);
     }
 
+
+
+
+//    @Operation(summary = "查询朋友圈列表")
+//    @GetMapping("/getList")
+//    public Result<PageList<PostDetail>> getList(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+//                                                @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+//        Integer userId = UserHolder.getLoginHolder().getUserId();
+//        PageList<PostDetail> pageInfo = userPostsService.getPostList(userId, pageNum, pageSize);
+//        return Result.ok(pageInfo);
+//    }
 
 }

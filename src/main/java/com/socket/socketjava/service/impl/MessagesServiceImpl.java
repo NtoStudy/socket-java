@@ -3,7 +3,7 @@ package com.socket.socketjava.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.socket.socketjava.domain.dto.MessageListDTO;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.pojo.Messages;
 import com.socket.socketjava.mapper.MessagesMapper;
 import com.socket.socketjava.service.IMessagesService;
@@ -33,7 +33,7 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
 
     @Cacheable(value = "privateChatHistory", key = "'private:'+#userId+':' + #receiverId+':' + #pageNum+ ':'+#pageSize")
     @Override
-    public MessageListDTO<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
+    public PageList<Messages> getHistoryList(Integer userId, Integer receiverId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
 
 
@@ -56,17 +56,17 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
 
         // 构造返回结果
         PageInfo<Messages> pageInfo = new PageInfo<>(messagesList);
-        MessageListDTO<Messages> messagesMessageListDTO = new MessageListDTO<>();
-        messagesMessageListDTO.setTotal(pageInfo.getTotal());
-        messagesMessageListDTO.setList(messagesList);
-        messagesMessageListDTO.setPageNum(pageInfo.getPageNum());
-        messagesMessageListDTO.setPageSize(pageInfo.getPageSize());
-        messagesMessageListDTO.setStartRow(pageInfo.getStartRow());
-        messagesMessageListDTO.setEndRow(pageInfo.getEndRow());
-        messagesMessageListDTO.setPages(pageInfo.getPages());
+        PageList<Messages> messagesPageList = new PageList<>();
+        messagesPageList.setTotal(pageInfo.getTotal());
+        messagesPageList.setList(messagesList);
+        messagesPageList.setPageNum(pageInfo.getPageNum());
+        messagesPageList.setPageSize(pageInfo.getPageSize());
+        messagesPageList.setStartRow(pageInfo.getStartRow());
+        messagesPageList.setEndRow(pageInfo.getEndRow());
+        messagesPageList.setPages(pageInfo.getPages());
 
 
-        return messagesMessageListDTO;
+        return messagesPageList;
     }
 
 

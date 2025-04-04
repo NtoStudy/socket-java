@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPostLikesService extends IService<PostLikes> {
 
+    void likePost(Integer postId, Integer userId, Integer isCancel);
 }

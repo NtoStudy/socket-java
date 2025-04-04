@@ -1,6 +1,6 @@
 package com.socket.socketjava.service;
 
-import com.socket.socketjava.domain.dto.MessageListDTO;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.pojo.GroupMessages;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IGroupMessagesService extends IService<GroupMessages> {
 
-    MessageListDTO<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize);
+    PageList<GroupMessages> getHistoryList(Integer userId, Integer chatRoomId, Integer pageNum, Integer pageSize);
 
     void removeBySenderId(Integer chatRoomId, Integer messageId, Integer userId);
 }

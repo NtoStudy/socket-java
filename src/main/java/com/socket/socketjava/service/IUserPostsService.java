@@ -2,6 +2,7 @@ package com.socket.socketjava.service;
 
 import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.domain.dto.LikeDetail;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.dto.PostDetail;
 import com.socket.socketjava.domain.pojo.UserPosts;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -25,4 +26,6 @@ public interface IUserPostsService extends IService<UserPosts> {
     List<CommentDetail> getCommentDetail(Integer postId);
 
     List<LikeDetail> getLikeDetail(Integer postId);
+
+//    PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize);
 }

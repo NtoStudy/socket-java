@@ -1,14 +1,17 @@
 package com.socket.socketjava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.domain.dto.LikeDetail;
+import com.socket.socketjava.domain.dto.PageList;
 import com.socket.socketjava.domain.dto.PostDetail;
 import com.socket.socketjava.domain.pojo.*;
 import com.socket.socketjava.mapper.PostCommentsMapper;
 import com.socket.socketjava.mapper.PostLikesMapper;
 import com.socket.socketjava.mapper.PostMediaMapper;
 import com.socket.socketjava.mapper.UserPostsMapper;
+import com.socket.socketjava.service.IFriendsService;
 import com.socket.socketjava.service.IUserPostsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.socket.socketjava.service.IUsersService;
@@ -16,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +44,8 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
     private PostLikesMapper postLikesMapper;
     @Autowired
     private IUsersService usersService;
+    @Autowired
+    private IFriendsService friendsService;
 
     @Override
     public void createPost(Integer userId, String content, String mediaType, String mediaUrl) {
@@ -115,4 +121,49 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
 
         return List.of();
     }
+
+//    @Override
+//    public PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize) {
+//        Page<UserPosts> page = new Page<>(pageNum, pageSize);
+//
+//        // 获取用户动态 按照时间排序，而只能查询自己好友的朋友圈
+//        Page<PostDetail> postDetailPage = new Page<>(pageNum, pageSize);
+//        // 查询用户好友
+//        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        friendsLambdaQueryWrapper.eq(Friends::getUserId, userId)
+//                .eq(Friends::getStatus, 1);
+//        List<Friends> list = friendsService.list(friendsLambdaQueryWrapper);
+//        // 获得所有好友id
+//        List<Integer> friendIds = list.stream().map(Friends::getFriendId).toList();
+//        // 添加自己的ID，这样也能看到自己的朋友圈
+//        friendIds.add(userId);
+//
+//        LambdaQueryWrapper<UserPosts> userPostsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        userPostsLambdaQueryWrapper
+//                .in(UserPosts::getUserId, friendIds)
+//                .eq(UserPosts::getIsDeleted, 0)
+//                .orderByDesc(UserPosts::getCreatedAt);
+//
+//        // 执行分页查询
+//        Page<UserPosts> postsPage = userPostsMapper.selectPage(page, userPostsLambdaQueryWrapper);
+//
+//        // 转换为PostDetail列表
+//        List<PostDetail> postDetails = new ArrayList<>();
+//        for (UserPosts post : postsPage.getRecords()) {
+//            PostDetail detail = new PostDetail();
+//            BeanUtils.copyProperties(post, detail);
+//
+//            // 获取媒体信息
+//            LambdaQueryWrapper<PostMedia> mediaQueryWrapper = new LambdaQueryWrapper<>();
+//            mediaQueryWrapper.eq(PostMedia::getPostId, post.getPostId());
+//            PostMedia media = postMediaMapper.selectOne(mediaQueryWrapper);
+//            if (media != null) {
+//                detail.setMediaType(media.getMediaType());
+//                detail.setMediaUrl(media.getMediaUrl());
+//            }
+//            postDetails.add(detail);
+//        }
+//
+//        return ;
+//    }
 }
