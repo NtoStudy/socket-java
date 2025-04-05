@@ -31,9 +31,10 @@ public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, Pos
 
     @Autowired
     private PostCommentsMapper postCommentsMapper;
-
     @Autowired
     private IUsersService usersService;
+    @Autowired
+    private IUserPostsService userPostsService;
 
     @Override
     public void commentPost(Integer postId, Integer userId, String content, Integer parentCommentId) {
@@ -55,6 +56,14 @@ public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, Pos
                     .setParentCommentId(parentCommentId);
             save(postComments);
         }
+        // 先查询这条帖子有多少评论数
+        Integer commentCount = userPostsService.getById(postId).getCommentCount();
+        // 无论是不是父级评论。都会增加评论数
+        LambdaUpdateWrapper<UserPosts> userPostsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userPostsLambdaUpdateWrapper.eq(UserPosts::getPostId, postId)
+                .eq(UserPosts::getIsDeleted, 0)
+                .set(UserPosts::getCommentCount, commentCount + 1);
+        userPostsService.update(userPostsLambdaUpdateWrapper);
     }
 
 
@@ -84,11 +93,19 @@ public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, Pos
     }
 
     @Override
-    public void deleteById(Integer commentId, Integer userId) {
+    public void deleteById(Integer postId, Integer commentId, Integer userId) {
         LambdaUpdateWrapper<PostComments> postCommentsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         postCommentsLambdaUpdateWrapper.eq(PostComments::getCommentId, commentId)
                 .eq(PostComments::getUserId, userId)
                 .set(PostComments::getIsDeleted, 1);
         update(postCommentsLambdaUpdateWrapper);
+        LambdaUpdateWrapper<UserPosts> userPostsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+
+        Integer commentCount = userPostsService.getById(postId).getCommentCount();
+
+        userPostsLambdaUpdateWrapper.eq(UserPosts::getPostId, postId)
+                .eq(UserPosts::getIsDeleted, 0)
+                .set(UserPosts::getCommentCount, commentCount - 1);
+        userPostsService.update(userPostsLambdaUpdateWrapper);
     }
 }

@@ -39,6 +39,8 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
     private PostMediaMapper postMediaMapper;
     @Autowired
     private UserPostsMapper userPostsMapper;
+    @Autowired
+    private IFriendsService friendsService;
 
     @Override
     public void createPost(Integer userId, String content, String mediaType, String mediaUrl) {
@@ -129,49 +131,81 @@ public class UserPostsServiceImpl extends ServiceImpl<UserPostsMapper, UserPosts
         return result;
     }
 
+    @Override
+    public PageList<PostDetail> getPostAllList(Integer userId, Integer pageNum, Integer pageSize) {
+        Page<UserPosts> page = new Page<>(pageNum, pageSize);
 
-//    @Override
-//    public PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize) {
-//        Page<UserPosts> page = new Page<>(pageNum, pageSize);
-//
-//        // 获取用户动态 按照时间排序，而只能查询自己好友的朋友圈
-//        Page<PostDetail> postDetailPage = new Page<>(pageNum, pageSize);
-//        // 查询用户好友
-//        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        friendsLambdaQueryWrapper.eq(Friends::getUserId, userId)
-//                .eq(Friends::getStatus, 1);
-//        List<Friends> list = friendsService.list(friendsLambdaQueryWrapper);
-//        // 获得所有好友id
-//        List<Integer> friendIds = list.stream().map(Friends::getFriendId).toList();
-//        // 添加自己的ID，这样也能看到自己的朋友圈
-//        friendIds.add(userId);
-//
-//        LambdaQueryWrapper<UserPosts> userPostsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        userPostsLambdaQueryWrapper
-//                .in(UserPosts::getUserId, friendIds)
-//                .eq(UserPosts::getIsDeleted, 0)
-//                .orderByDesc(UserPosts::getCreatedAt);
-//
-//        // 执行分页查询
-//        Page<UserPosts> postsPage = userPostsMapper.selectPage(page, userPostsLambdaQueryWrapper);
-//
-//        // 转换为PostDetail列表
-//        List<PostDetail> postDetails = new ArrayList<>();
-//        for (UserPosts post : postsPage.getRecords()) {
-//            PostDetail detail = new PostDetail();
-//            BeanUtils.copyProperties(post, detail);
-//
-//            // 获取媒体信息
-//            LambdaQueryWrapper<PostMedia> mediaQueryWrapper = new LambdaQueryWrapper<>();
-//            mediaQueryWrapper.eq(PostMedia::getPostId, post.getPostId());
-//            PostMedia media = postMediaMapper.selectOne(mediaQueryWrapper);
-//            if (media != null) {
-//                detail.setMediaType(media.getMediaType());
-//                detail.setMediaUrl(media.getMediaUrl());
-//            }
-//            postDetails.add(detail);
-//        }
-//
-//        return ;
-//    }
+        // 查询用户好友
+        LambdaQueryWrapper<Friends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        friendsLambdaQueryWrapper.eq(Friends::getUserId, userId)
+                .eq(Friends::getStatus, 1);
+        List<Friends> list = friendsService.list(friendsLambdaQueryWrapper);
+
+        // 获得所有好友id
+        List<Integer> friendIds = list.stream().map(Friends::getFriendId).toList();
+        // 添加自己的ID，这样也能看到自己的朋友圈
+        List<Integer> allUserIds = new ArrayList<>(friendIds);
+        allUserIds.add(userId);
+
+        // 创建查询条件：查询所有好友和自己的动态
+        LambdaQueryWrapper<UserPosts> userPostsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userPostsLambdaQueryWrapper
+                .in(UserPosts::getUserId, allUserIds)  // 使用in查询所有好友和自己的动态
+                .eq(UserPosts::getIsDeleted, 0)
+                .orderByDesc(UserPosts::getCreatedAt); // 按时间倒序排序
+
+        // 执行分页查询
+        Page<UserPosts> postsPage = userPostsMapper.selectPage(page, userPostsLambdaQueryWrapper);
+
+        // 转换为PostDetail列表
+        List<PostDetail> postDetails = new ArrayList<>();
+        for (UserPosts post : postsPage.getRecords()) {
+            PostDetail detail = new PostDetail();
+            BeanUtils.copyProperties(post, detail);
+
+            // 获取媒体信息
+            LambdaQueryWrapper<PostMedia> mediaQueryWrapper = new LambdaQueryWrapper<>();
+            mediaQueryWrapper.eq(PostMedia::getPostId, post.getPostId());
+            PostMedia media = postMediaMapper.selectOne(mediaQueryWrapper);
+            if (media != null) {
+                detail.setMediaType(media.getMediaType());
+                detail.setMediaUrl(media.getMediaUrl());
+            }
+
+            postDetails.add(detail);
+        }
+
+        // 构建返回结果
+        PageList<PostDetail> result = new PageList<>();
+        result.setTotal(postsPage.getTotal());
+        result.setList(postDetails);
+        result.setPageNum((int) postsPage.getCurrent());
+        result.setPageSize((int) postsPage.getSize());
+        result.setPages((int) postsPage.getPages());
+
+        return result;
+    }
+
+    @Override
+    public void addLikeCount(Integer postId, Integer isCancel) {
+        LambdaQueryWrapper<UserPosts> userPostsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userPostsLambdaQueryWrapper.eq(UserPosts::getPostId, postId)
+                .eq(UserPosts::getIsDeleted, 0);
+        UserPosts userPosts = userPostsMapper.selectOne(userPostsLambdaQueryWrapper);
+        Integer likeCount = userPosts.getLikeCount();
+
+        LambdaUpdateWrapper<UserPosts> userPostsLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userPostsLambdaUpdateWrapper.eq(UserPosts::getPostId, postId)
+                .eq(UserPosts::getIsDeleted, 0);
+        if (isCancel == 0) {
+            // 代表数量加一
+            update(userPostsLambdaUpdateWrapper.set(UserPosts::getLikeCount, likeCount + 1));
+        } else if (isCancel == 1) {
+            // 代表数量减一
+            update(userPostsLambdaUpdateWrapper.set(UserPosts::getLikeCount, likeCount - 1));
+
+        }
+    }
+
+
 }

@@ -4,6 +4,7 @@ package com.socket.socketjava.controller;
 import com.socket.socketjava.domain.dto.CommentDetail;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IPostCommentsService;
+import com.socket.socketjava.service.IUserPostsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class PostCommentsController {
 
     @Autowired
     private IPostCommentsService postCommentsService;
+    @Autowired
+    private IUserPostsService userPostsService;
 
     @Operation(summary = "给朋友动态评论")
     @PostMapping("/commentPost")
@@ -47,9 +50,9 @@ public class PostCommentsController {
 
     @DeleteMapping("/deleteById")
     @Operation(summary = "删除自己的评论")
-    public Result<String> deleteById(Integer commentId) {
+    public Result<String> deleteById(Integer postId,Integer commentId) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
-        postCommentsService.deleteById(commentId, userId);
+        postCommentsService.deleteById(postId,commentId, userId);
         return Result.ok("删除成功");
     }
 

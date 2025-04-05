@@ -4,6 +4,7 @@ package com.socket.socketjava.controller;
 import com.socket.socketjava.domain.dto.LikeDetail;
 import com.socket.socketjava.result.Result;
 import com.socket.socketjava.service.IPostLikesService;
+import com.socket.socketjava.service.IUserPostsService;
 import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +33,17 @@ public class PostLikesController {
 
     @Autowired
     private IPostLikesService postLikesService;
+    @Autowired
+    private IUserPostsService userPostsService;
 
     @Operation(summary = "给朋友动态点赞/取消点赞")
     @PostMapping("/likePost")
     public Result<String> likePost(Integer postId, Integer isCancel) {
         Integer userId = UserHolder.getLoginHolder().getUserId();
+        // 在like表中增添字段
         postLikesService.likePost(postId, userId, isCancel);
+        // post表字段加一
+        userPostsService.addLikeCount(postId, isCancel);
         return Result.ok(isCancel == 0 ? "点赞成功" : "取消点赞成功");
     }
 

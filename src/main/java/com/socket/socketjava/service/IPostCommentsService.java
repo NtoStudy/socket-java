@@ -20,5 +20,5 @@ public interface IPostCommentsService extends IService<PostComments> {
 
     List<CommentDetail> getCommentDetail(Integer postId);
 
-    void deleteById(Integer commentId, Integer userId);
+    void deleteById(Integer postId, Integer commentId, Integer userId);
 }

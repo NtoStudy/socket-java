@@ -7,6 +7,7 @@ import com.socket.socketjava.domain.dto.FriendIsContainerUser;
 import com.socket.socketjava.domain.dto.GroupUserInfo;
 import com.socket.socketjava.domain.pojo.UserChatRooms;
 import com.socket.socketjava.domain.pojo.Users;
+import com.socket.socketjava.domain.vo.Moment.momentData;
 import com.socket.socketjava.domain.vo.Users.LoginVo;
 import com.socket.socketjava.domain.vo.Users.RegisterVo;
 import com.socket.socketjava.result.Result;
@@ -16,6 +17,7 @@ import com.socket.socketjava.utils.holder.UserHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,6 +70,16 @@ public class UsersController {
         Integer currentUserId = UserHolder.getLoginHolder().getUserId();
         FriendPlus friendPlus = usersService.getUserInfoWithFriendRelation(userId, currentUserId);
         return Result.ok(friendPlus);
+    }
+
+
+    @Operation(summary = "根据用户ID查询朋友圈用户简略信息")
+    @GetMapping("/infoByIdInMoment")
+    public Result<momentData> getUserInfoByIdInMoment(@RequestParam Integer userId) {
+        Users users = usersService.getById(userId);
+        momentData momentData = new momentData();
+        BeanUtils.copyProperties(users, momentData);
+        return Result.ok(momentData);
     }
 
 

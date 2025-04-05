@@ -66,13 +66,13 @@ public class UserPostsController {
     }
 
 
-//    @Operation(summary = "查询朋友圈列表")
-//    @GetMapping("/getList")
-//    public Result<PageList<PostDetail>> getList(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-//                                                @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
-//        Integer userId = UserHolder.getLoginHolder().getUserId();
-//        PageList<PostDetail> pageInfo = userPostsService.getPostList(userId, pageNum, pageSize);
-//        return Result.ok(pageInfo);
-//    }
+    @Operation(summary = "查询朋友圈列表")
+    @GetMapping("/getAllList")
+    public Result<PageList<PostDetail>> getAllList(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+        Integer userId = UserHolder.getLoginHolder().getUserId();
+        PageList<PostDetail> pageInfo = userPostsService.getPostAllList(userId, pageNum, pageSize);
+        return Result.ok(pageInfo);
+    }
 
 }

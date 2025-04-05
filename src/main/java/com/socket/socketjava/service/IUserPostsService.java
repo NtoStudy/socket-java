@@ -27,6 +27,10 @@ public interface IUserPostsService extends IService<UserPosts> {
 
     PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize);
 
+    PageList<PostDetail> getPostAllList(Integer userId, Integer pageNum, Integer pageSize);
+
+    void addLikeCount(Integer postId, Integer isCancel);
+
 
 //    PageList<PostDetail> getPostList(Integer userId, Integer pageNum, Integer pageSize);
 }
